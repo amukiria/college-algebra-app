@@ -68,3 +68,16 @@ button.primary {
 button.secondary {
   @apply bg-gray-500 text-white hover:bg-gray-700;
 }
+
+/* Navigation Styles */
+header {
+  @apply bg-primary text-primary shadow-md;
+}
+
+header a {
+  @apply text-text hover:text-accent transition-colors duration-300;
+}
+
+button {
+  @apply bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300;
+}
