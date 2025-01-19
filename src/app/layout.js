@@ -1,4 +1,5 @@
 import '../styles/globals.css';
+import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
 export const metadata = {
@@ -9,9 +10,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="bg-secondary text-text">
-        <TopBar /> {/* Render Top Bar on All Pages */}
-        <main>{children}</main>
+      <body className="flex bg-secondary text-text">
+        <Sidebar /> {/* Sidebar Component */}
+        <div className="flex-1 ml-64">
+          <TopBar /> {/* Top Bar Component */}
+          <main className="p-8">{children}</main>
+        </div>
       </body>
     </html>
   );

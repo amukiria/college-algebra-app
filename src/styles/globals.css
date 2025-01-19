@@ -81,3 +81,12 @@ header a {
 button {
   @apply bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300;
 }
+
+/* Sidebar Styling */
+aside {
+  @apply bg-primary text-primary shadow-md;
+}
+
+aside nav ul li a {
+  @apply block px-4 py-2 text-sm hover:bg-secondary hover:text-accent transition-all;
+}
