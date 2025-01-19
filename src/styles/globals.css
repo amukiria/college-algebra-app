@@ -4,23 +4,24 @@
 
 /* Global Styles */
 body {
-  @apply bg-primary text-text font-sans;
+  @apply bg-secondary text-primary font-sans;
 }
 
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
-  @apply text-accent;
+  @apply text-accent font-bold;
 }
 
 a {
-  @apply text-accent underline;
+  @apply text-accent underline hover:text-blue-600 transition-colors;
 }
 
 button {
-  @apply cursor-pointer;
+  @apply cursor-pointer bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors;
 }
 
 input, textarea {
-  @apply text-primary placeholder-secondary focus:outline-none focus:ring focus:ring-accent;
+  @apply text-primary placeholder-secondary border border-gray-300 rounded focus:outline-none focus:ring focus:ring-accent;
 }
 
 /* Utility Classes for Layout Consistency */
@@ -36,6 +37,16 @@ input, textarea {
   @apply min-h-screen;
 }
 
+/* Venn Diagram Container */
+#venn {
+  @apply mx-auto mt-12 max-w-xl;
+}
+
+/* Tooltip Styling */
+#tooltip {
+  @apply absolute bg-white text-primary p-2 rounded shadow-lg invisible z-50;
+}
+
 /* Scrollbar Styles */
 ::-webkit-scrollbar {
   width: 8px;
@@ -46,5 +57,14 @@ input, textarea {
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-secondary;
+  @apply bg-gray-200;
+}
+
+/* Button Variants */
+button.primary {
+  @apply bg-blue-500 text-white hover:bg-blue-700;
+}
+
+button.secondary {
+  @apply bg-gray-500 text-white hover:bg-gray-700;
 }

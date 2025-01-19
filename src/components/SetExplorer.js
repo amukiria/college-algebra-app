@@ -1,32 +1,21 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import * as d3 from "d3";
+import * as venn from "venn.js";
+
+// Attach d3 globally if required
+if (typeof window !== "undefined") {
+  window.d3 = d3;
+}
 
 const SetExplorer = () => {
   const [query, setQuery] = useState("");
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState("");
-
-  const fetchSetProblem = async () => {
-    try {
-      setError("");
-      const response = await fetch("/api/sets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        setError(data.error);
-      } else {
-        setResult(data.data.queryresult);
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-    }
-  };
+  const [chartData, setChartData] = useState([
+    { sets: ["A"], size: 3 },
+    { sets: ["B"], size: 3 },
+    { sets: ["A", "B"], size: 2 },
+  ]);
 
   const exampleQueries = [
     {
@@ -37,7 +26,7 @@ const SetExplorer = () => {
     {
       title: "Union",
       description: "Combine all unique elements from two sets.",
-      query: "union of {1, 2} and {3, 4}",
+      query: "union of {1, 2, 3} and {3, 4, 5}",
     },
     {
       title: "Difference",
@@ -45,6 +34,43 @@ const SetExplorer = () => {
       query: "difference of {1, 2, 3} and {2, 3, 4}",
     },
   ];
+
+  const fetchSetProblem = async () => {
+    const setA = new Set([1, 2, 3]);
+    const setB = new Set([2, 3, 4]);
+
+    const intersection = [...setA].filter((x) => setB.has(x)).length;
+    const onlyInA = [...setA].filter((x) => !setB.has(x)).length;
+    const onlyInB = [...setB].filter((x) => !setA.has(x)).length;
+
+    setChartData([
+      { sets: ["A"], size: onlyInA },
+      { sets: ["B"], size: onlyInB },
+      { sets: ["A", "B"], size: intersection },
+    ]);
+  };
+
+  useEffect(() => {
+    const chart = venn.VennDiagram().width(400).height(400);
+
+    // Render the Venn diagram
+    d3.select("#venn").datum(chartData).call(chart);
+
+    // Add interactivity
+    d3.selectAll("#venn .venn-circle path")
+      .style("stroke", "#000")
+      .style("stroke-width", 1)
+      .on("mouseover", function (event, d) {
+        d3.select(this).style("fill-opacity", 0.5);
+        d3.select("#tooltip")
+          .style("visibility", "visible")
+          .text(`${d.sets.join(" ∩ ")}: ${d.size}`);
+      })
+      .on("mouseout", function () {
+        d3.select(this).style("fill-opacity", 0.3);
+        d3.select("#tooltip").style("visibility", "hidden");
+      });
+  }, [chartData]);
 
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
@@ -80,23 +106,32 @@ const SetExplorer = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter your query (e.g., 'intersection of {1, 2} and {2, 3}')"
+          placeholder="Enter your query (e.g., 'intersection of {1, 2, 3} and {2, 3, 4}')"
           className="border p-2 w-full text-primary placeholder-secondary rounded focus:outline-none focus:ring focus:ring-accent"
         />
         <button
           className="mt-4 bg-accent text-white px-4 py-2 w-full font-bold hover:bg-blue-600 transition-colors"
           onClick={fetchSetProblem}
         >
-          Generate Result
+          Compute Result
         </button>
-        {error && <p className="text-red-500 mt-4">{error}</p>}
-        {result && (
-          <div className="mt-4 bg-secondary p-4 rounded text-text">
-            <h3 className="text-lg font-bold mb-2">Result:</h3>
-            <pre className="bg-primary p-2 rounded">{JSON.stringify(result, null, 2)}</pre>
-          </div>
-        )}
       </div>
+
+      {/* Tooltip for Interactivity */}
+      <div
+        id="tooltip"
+        style={{
+          position: "absolute",
+          backgroundColor: "#fff",
+          border: "1px solid #ccc",
+          padding: "5px",
+          borderRadius: "4px",
+          visibility: "hidden",
+        }}
+      ></div>
+
+      {/* Venn Diagram */}
+      <div id="venn" className="mt-12"></div>
     </div>
   );
 };

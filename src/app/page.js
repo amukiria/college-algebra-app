@@ -1,4 +1,4 @@
-import SetExplorer from '@/components/SetExplorer';
+import SetExplorer from "@/components/SetExplorer";
 
 export default function Home() {
   return (
