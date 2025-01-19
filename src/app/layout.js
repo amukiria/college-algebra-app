@@ -3,9 +3,10 @@ import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
 export const metadata = {
-  title: "College Algebra App",
+  title: "MTH 1109 - College Algebra", // Updated title
   description: "An interactive way to learn algebra using gamified learning modules.",
 };
+
 
 export default function RootLayout({ children }) {
   return (

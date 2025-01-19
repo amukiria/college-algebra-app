@@ -9,10 +9,10 @@ const topics = [
   { title: "Quadratic Equations", path: "/lessons/quadratics", description: "Solve quadratic equations using multiple methods." },
 ];
 
-export default function LessonsDashboard() {
+export default function Dashboard() {
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
-      <h1 className="text-4xl font-bold text-accent mb-8">College Algebra Lessons</h1>
+      <h1 className="text-4xl font-bold text-accent mb-8">MTH 1109 - College Algebra Dashboard</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {topics.map((topic, index) => (
           <div key={index} className="p-6 bg-primary rounded-lg shadow hover:shadow-lg">

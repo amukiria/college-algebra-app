@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 
@@ -16,7 +17,7 @@ const Sidebar = () => {
   return (
     <aside className="bg-primary w-64 h-screen fixed left-0 top-0 shadow-md text-text">
       <div className="p-6 font-bold text-accent text-lg border-b border-gray-200">
-        Course Topics
+        MTH 1109 - College Algebra
       </div>
       <nav className="mt-4">
         <ul>
@@ -52,10 +53,16 @@ const Sidebar = () => {
           {topics.map((topic, index) => (
             <li key={index} className="mb-2">
               <Link
-                href={topic.path}
+                href={`${topic.path}/lesson`}
                 className="block px-4 py-2 hover:bg-secondary hover:text-accent transition"
               >
-                {topic.title}
+                {topic.title} - Lesson
+              </Link>
+              <Link
+                href={`${topic.path}/practice`}
+                className="block px-4 py-2 hover:bg-secondary hover:text-accent transition ml-4"
+              >
+                Practice Exercises
               </Link>
             </li>
           ))}
