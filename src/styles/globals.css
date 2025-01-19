@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global Styles */
+body {
+  @apply bg-primary text-text font-sans;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  @apply text-accent;
+}
+
+a {
+  @apply text-accent underline;
+}
+
+button {
+  @apply cursor-pointer;
+}
+
+input, textarea {
+  @apply text-primary placeholder-secondary focus:outline-none focus:ring focus:ring-accent;
+}
+
+/* Utility Classes for Layout Consistency */
+.container {
+  @apply mx-auto max-w-7xl px-4;
+}
+
+.flex-center {
+  @apply flex justify-center items-center;
+}
+
+.full-height {
+  @apply min-h-screen;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent rounded-lg;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-secondary;
+}
