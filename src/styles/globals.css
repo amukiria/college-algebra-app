@@ -4,27 +4,25 @@
 
 /* Global Styles */
 body {
-  @apply bg-secondary text-primary font-sans;
+  @apply bg-background text-grayNeutral font-body;
 }
 
-/* Typography */
 h1, h2, h3, h4, h5, h6 {
-  @apply text-accent font-bold;
+  @apply text-darkNavy font-heading;
 }
 
 a {
-  @apply text-accent underline hover:text-blue-600 transition-colors;
+  @apply text-coral underline hover:text-salmon transition-colors;
 }
 
 button {
-  @apply cursor-pointer bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors;
+  @apply bg-coral text-white px-4 py-2 rounded hover:bg-salmon transition-all;
 }
 
 input, textarea {
-  @apply text-primary placeholder-secondary border border-gray-300 rounded focus:outline-none focus:ring focus:ring-accent;
+  @apply text-darkNavy bg-lightNeutral placeholder-grayNeutral border border-gray-300 focus:outline-none focus:ring-2 focus:ring-coral;
 }
 
-/* Utility Classes for Layout Consistency */
 .container {
   @apply mx-auto max-w-7xl px-4;
 }
@@ -35,58 +33,4 @@ input, textarea {
 
 .full-height {
   @apply min-h-screen;
-}
-
-/* Venn Diagram Container */
-#venn {
-  @apply mx-auto mt-12 max-w-xl;
-}
-
-/* Tooltip Styling */
-#tooltip {
-  @apply absolute bg-white text-primary p-2 rounded shadow-lg invisible z-50;
-}
-
-/* Scrollbar Styles */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-accent rounded-lg;
-}
-
-::-webkit-scrollbar-track {
-  @apply bg-gray-200;
-}
-
-/* Button Variants */
-button.primary {
-  @apply bg-blue-500 text-white hover:bg-blue-700;
-}
-
-button.secondary {
-  @apply bg-gray-500 text-white hover:bg-gray-700;
-}
-
-/* Navigation Styles */
-header {
-  @apply bg-primary text-primary shadow-md;
-}
-
-header a {
-  @apply text-text hover:text-accent transition-colors duration-300;
-}
-
-button {
-  @apply bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-300;
-}
-
-/* Sidebar Styling */
-aside {
-  @apply bg-primary text-primary shadow-md;
-}
-
-aside nav ul li a {
-  @apply block px-4 py-2 text-sm hover:bg-secondary hover:text-accent transition-all;
 }
