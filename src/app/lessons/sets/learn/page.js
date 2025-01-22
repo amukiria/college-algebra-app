@@ -1,3 +1,5 @@
+import Link from 'next/link'; // Import Link from next/link
+
 export default function SetsLesson() {
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
@@ -81,6 +83,15 @@ A' = {4, 5}`}</pre>
       <p>
         Sets are an essential concept in mathematics and are used to organize and analyze objects. Understanding set operations is crucial for solving a wide range of problems.
       </p>
+
+      {/* Practice Sets Button */}
+      <div className="mt-8 text-center">
+        <Link href="/lessons/sets/practice">
+          <button className="px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-accent-dark">
+            Practice Sets
+          </button>
+        </Link>
+      </div>
     </div>
   );
 }
