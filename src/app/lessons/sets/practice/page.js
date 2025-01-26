@@ -5,13 +5,13 @@ import * as d3 from "d3";
 import * as venn from "venn.js";
 
 export default function SetsPractice() {
-  const [setA, setSetA] = useState([1, 2, 3]);
-  const [setB, setSetB] = useState([2, 3, 4]);
+  const [setA, setSetA] = useState([]);
+  const [setB, setSetB] = useState([]);
   const [result, setResult] = useState("");
   const [vennData, setVennData] = useState([
-    { sets: ["A"], size: 3 },
-    { sets: ["B"], size: 3 },
-    { sets: ["A", "B"], size: 2 },
+    { sets: ["A"], size: 0 },
+    { sets: ["B"], size: 0 },
+    { sets: ["A", "B"], size: 0 },
   ]);
   const [hoveredSet, setHoveredSet] = useState({ sets: "", elements: [] });
   const [operation, setOperation] = useState(""); // Track the operation being performed
@@ -89,24 +89,27 @@ export default function SetsPractice() {
 
   // Reset function to clear input and reset Venn Diagram
   const resetVennDiagram = () => {
-    setSetA([1, 2, 3]);
-    setSetB([2, 3, 4]);
+    setSetA([]);
+    setSetB([]);
     setResult("");
     setOperation("");
     setVennData([
-      { sets: ["A"], size: 3 },
-      { sets: ["B"], size: 3 },
-      { sets: ["A", "B"], size: 2 },
+      { sets: ["A"], size: 0 },
+      { sets: ["B"], size: 0 },
+      { sets: ["A", "B"], size: 0 },
     ]);
     // Reset the hovered set and clear hover elements
     setHoveredSet({ sets: "", elements: [] });
     // Reset operation
     setOperation("");
     updateVennDiagram([
-      { sets: ["A"], size: 3 },
-      { sets: ["B"], size: 3 },
-      { sets: ["A", "B"], size: 2 },
+      { sets: ["A"], size: 0 },
+      { sets: ["B"], size: 0 },
+      { sets: ["A", "B"], size: 0 },
     ]);
+    // Clear text fields
+    document.querySelector("input[placeholder='Enter Set A']").value = '';
+    document.querySelector("input[placeholder='Enter Set B']").value = '';
   };
 
   // Updates hover feedback
@@ -161,6 +164,7 @@ export default function SetsPractice() {
           type="text"
           onChange={(e) => setSetA(e.target.value.split(",").map((item) => parseInt(item.trim())))}
           className="p-2 border rounded mb-4"
+          placeholder="Enter Set A"
         />
       </div>
 
@@ -170,6 +174,7 @@ export default function SetsPractice() {
           type="text"
           onChange={(e) => setSetB(e.target.value.split(",").map((item) => parseInt(item.trim())))}
           className="p-2 border rounded mb-4"
+          placeholder="Enter Set B"
         />
       </div>
 
