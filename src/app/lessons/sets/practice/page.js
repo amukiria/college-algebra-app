@@ -8,11 +8,7 @@ export default function SetsPractice() {
   const [setA, setSetA] = useState([]);
   const [setB, setSetB] = useState([]);
   const [result, setResult] = useState("");
-  const [vennData, setVennData] = useState([
-    { sets: ["A"], size: 0 },
-    { sets: ["B"], size: 0 },
-    { sets: ["A", "B"], size: 0 },
-  ]);
+  const [vennData, setVennData] = useState([]);
   const [hoveredSet, setHoveredSet] = useState({ sets: "", elements: [] });
   const [operation, setOperation] = useState(""); // Track the operation being performed
 
@@ -93,23 +89,13 @@ export default function SetsPractice() {
     setSetB([]);
     setResult("");
     setOperation("");
-    setVennData([
-      { sets: ["A"], size: 0 },
-      { sets: ["B"], size: 0 },
-      { sets: ["A", "B"], size: 0 },
-    ]);
-    // Reset the hovered set and clear hover elements
+    setVennData([]);
     setHoveredSet({ sets: "", elements: [] });
-    // Reset operation
     setOperation("");
-    updateVennDiagram([
-      { sets: ["A"], size: 0 },
-      { sets: ["B"], size: 0 },
-      { sets: ["A", "B"], size: 0 },
-    ]);
-    // Clear text fields
-    document.querySelector("input[placeholder='Enter Set A']").value = '';
-    document.querySelector("input[placeholder='Enter Set B']").value = '';
+    updateVennDiagram([]);
+    // Clearing both text fields
+    const textFields = document.querySelectorAll('input[type="text"]');
+    textFields.forEach((field) => field.value = '');  // Reset all text fields
   };
 
   // Updates hover feedback
@@ -164,7 +150,6 @@ export default function SetsPractice() {
           type="text"
           onChange={(e) => setSetA(e.target.value.split(",").map((item) => parseInt(item.trim())))}
           className="p-2 border rounded mb-4"
-          placeholder="Enter Set A"
         />
       </div>
 
@@ -174,7 +159,6 @@ export default function SetsPractice() {
           type="text"
           onChange={(e) => setSetB(e.target.value.split(",").map((item) => parseInt(item.trim())))}
           className="p-2 border rounded mb-4"
-          placeholder="Enter Set B"
         />
       </div>
 
@@ -219,6 +203,26 @@ export default function SetsPractice() {
       )}
 
       <div id="venn" className="mt-8"></div>
+
+      <div className="mt-8">
+        <p><strong>Cardinality of A:</strong> {setA.length}</p>
+        <p><strong>Cardinality of B:</strong> {setB.length}</p>
+        <p><strong>Power Set of A:</strong> {JSON.stringify(powerSet(setA))}</p>
+        <p><strong>Power Set of B:</strong> {JSON.stringify(powerSet(setB))}</p>
+      </div>
     </div>
   );
+
+  // Function to generate the power set
+  function powerSet(set) {
+    const result = [[]];
+    for (let i = 0; i < set.length; i++) {
+      const currentSet = set[i];
+      const len = result.length;
+      for (let j = 0; j < len; j++) {
+        result.push([...result[j], currentSet]);
+      }
+    }
+    return result;
+  }
 }
