@@ -3,16 +3,22 @@
 import React, { useState, useEffect } from "react";
 import * as d3 from "d3";
 import * as venn from "venn.js";
+import Link from 'next/link';
 
 export default function SetsPractice() {
   const [setA, setSetA] = useState([]);
   const [setB, setSetB] = useState([]);
   const [result, setResult] = useState("");
-  const [vennData, setVennData] = useState([]);
+  const [vennData, setVennData] = useState([
+    { sets: ["A"], size: 0 },
+    { sets: ["B"], size: 0 },
+    { sets: ["A", "B"], size: 0 },
+  ]);
   const [hoveredSet, setHoveredSet] = useState({ sets: "", elements: [] });
-  const [operation, setOperation] = useState(""); // Track the operation being performed
+  const [operation, setOperation] = useState("");
+  const [cardinalityA, setCardinalityA] = useState(0);
+  const [cardinalityB, setCardinalityB] = useState(0);
 
-  // Updates Venn diagram with new data
   const updateVennDiagram = (newData) => {
     const chart = venn.VennDiagram().width(400).height(400);
     d3.select("#venn")
@@ -23,14 +29,11 @@ export default function SetsPractice() {
       .style("opacity", 1);
   };
 
-  // Handles the intersection operation
   const handleIntersection = () => {
     let intersection = [...new Set(setA)].filter((x) => new Set(setB).has(x));
-
     setResult(`Intersection: {${intersection.join(", ")}}`);
     setOperation("Intersection");
 
-    // Update venn diagram data
     setVennData([
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
@@ -43,14 +46,11 @@ export default function SetsPractice() {
     ]);
   };
 
-  // Handles the union operation
   const handleUnion = () => {
     let union = [...new Set([...setA, ...setB])];
-
     setResult(`Union: {${union.join(", ")}}`);
     setOperation("Union");
 
-    // Update venn diagram data
     setVennData([
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
@@ -63,14 +63,11 @@ export default function SetsPractice() {
     ]);
   };
 
-  // Handles the difference operation
   const handleDifference = () => {
     let difference = [...new Set(setA)].filter((x) => !new Set(setB).has(x));
-
     setResult(`Difference (A - B): {${difference.join(", ")}}`);
     setOperation("Difference");
 
-    // Update venn diagram data
     setVennData([
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
@@ -83,59 +80,33 @@ export default function SetsPractice() {
     ]);
   };
 
-  // Reset function to clear input and reset Venn Diagram
   const resetVennDiagram = () => {
     setSetA([]);
     setSetB([]);
     setResult("");
     setOperation("");
-    setVennData([]);
+    setCardinalityA(0);
+    setCardinalityB(0);
+    setVennData([
+      { sets: ["A"], size: 0 },
+      { sets: ["B"], size: 0 },
+      { sets: ["A", "B"], size: 0 },
+    ]);
     setHoveredSet({ sets: "", elements: [] });
     setOperation("");
-    updateVennDiagram([]);
-    // Clearing both text fields
-    const textFields = document.querySelectorAll('input[type="text"]');
-    textFields.forEach((field) => field.value = '');  // Reset all text fields
+    updateVennDiagram([
+      { sets: ["A"], size: 0 },
+      { sets: ["B"], size: 0 },
+      { sets: ["A", "B"], size: 0 },
+    ]);
   };
 
-  // Updates hover feedback
-  useEffect(() => {
-    const chart = venn.VennDiagram().width(400).height(400);
-    
-    const vennElement = d3.select("#venn")
-      .datum(vennData)
-      .call(chart);
-
-    vennElement
-      .selectAll("g")
-      .on("mouseover", function(event, d) {
-        if (hoveredSet.sets === "") { // Only show hover if there’s no reset
-          const setNames = d.sets;
-          let hoveredElements = [];
-
-          // Include elements in the set based on the hovered section
-          if (setNames.includes("A")) hoveredElements = [...hoveredElements, ...setA];
-          if (setNames.includes("B")) hoveredElements = [...hoveredElements, ...setB];
-
-          // Show hovered set and its elements
-          setHoveredSet({ sets: setNames.join(", "), elements: hoveredElements.length > 0 ? hoveredElements : [0] });
-        }
-      })
-      .on("mouseout", function() {
-        if (hoveredSet.sets !== "") { // Only clear hover feedback if not reset
-          setHoveredSet({ sets: "", elements: [] });
-        }
-      });
-  }, [vennData, setA, setB, hoveredSet]);
-
-  // Trigger venn diagram update when sets change
   useEffect(() => {
     const initialVennData = [
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
       { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => new Set(setB).has(x)).length },
     ];
-
     setVennData(initialVennData);
     updateVennDiagram(initialVennData);
   }, [setA, setB]);
@@ -148,7 +119,11 @@ export default function SetsPractice() {
         <label className="block mb-2">Enter Set A (comma separated):</label>
         <input
           type="text"
-          onChange={(e) => setSetA(e.target.value.split(",").map((item) => parseInt(item.trim())))}
+          onChange={(e) => {
+            const newSetA = e.target.value.split(",").map((item) => parseInt(item.trim()));
+            setSetA(newSetA);
+            setCardinalityA(newSetA.length);
+          }}
           className="p-2 border rounded mb-4"
         />
       </div>
@@ -157,7 +132,11 @@ export default function SetsPractice() {
         <label className="block mb-2">Enter Set B (comma separated):</label>
         <input
           type="text"
-          onChange={(e) => setSetB(e.target.value.split(",").map((item) => parseInt(item.trim())))}
+          onChange={(e) => {
+            const newSetB = e.target.value.split(",").map((item) => parseInt(item.trim()));
+            setSetB(newSetB);
+            setCardinalityB(newSetB.length);
+          }}
           className="p-2 border rounded mb-4"
         />
       </div>
@@ -204,23 +183,29 @@ export default function SetsPractice() {
 
       <div id="venn" className="mt-8"></div>
 
-      <div className="mt-8">
-        <p><strong>Cardinality of A:</strong> {setA.length}</p>
-        <p><strong>Cardinality of B:</strong> {setB.length}</p>
-        <p><strong>Power Set of A:</strong> {JSON.stringify(powerSet(setA))}</p>
-        <p><strong>Power Set of B:</strong> {JSON.stringify(powerSet(setB))}</p>
+      <div className="mt-4">
+        <p><strong>Cardinality of A: </strong>{cardinalityA}</p>
+        <p><strong>Cardinality of B: </strong>{cardinalityB}</p>
+        <p><strong>Power Set of A: </strong>{JSON.stringify(powerSet(setA))}</p>
+        <p><strong>Power Set of B: </strong>{JSON.stringify(powerSet(setB))}</p>
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Link href="/set-practice-2" passHref>
+          <button className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
+            Set Explorer 2 - 3 Sets
+          </button>
+        </Link>
       </div>
     </div>
   );
 
-  // Function to generate the power set
   function powerSet(set) {
     const result = [[]];
-    for (let i = 0; i < set.length; i++) {
-      const currentSet = set[i];
-      const len = result.length;
-      for (let j = 0; j < len; j++) {
-        result.push([...result[j], currentSet]);
+    for (const value of set) {
+      const currentLength = result.length;
+      for (let i = 0; i < currentLength; i++) {
+        result.push([...result[i], value]);
       }
     }
     return result;
