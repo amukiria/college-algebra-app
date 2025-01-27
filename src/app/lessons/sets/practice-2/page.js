@@ -35,8 +35,8 @@ export default function SetsPractice() {
   };
 
   const handleIntersection = () => {
-    let intersection = [...new Set(setA)].filter(
-      (x) => new Set(setB).has(x) && new Set(setC).has(x)
+    let intersection = [...new Set(setA)].filter((x) =>
+      setB.includes(x) && setC.includes(x)
     );
     setResult(`Intersection: {${intersection.join(", ")}}`);
     setOperation("Intersection");
@@ -48,7 +48,7 @@ export default function SetsPractice() {
       { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
       { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
       { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
-      { sets: ["A", "B", "C"], size: intersection.length },
+      { sets: ["A", "B", "C"], size: intersection.length }, // Intersection of A, B, and C
     ]);
     updateVennDiagram([
       { sets: ["A"], size: setA.length },
@@ -57,7 +57,7 @@ export default function SetsPractice() {
       { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
       { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
       { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
-      { sets: ["A", "B", "C"], size: intersection.length },
+      { sets: ["A", "B", "C"], size: intersection.length }, // Intersection of A, B, and C
     ]);
   };
 
@@ -131,7 +131,7 @@ export default function SetsPractice() {
 
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
-      <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer 2</h1>
+      <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer</h1>
 
       {/* Input for Set A */}
       <div className="mb-4">
