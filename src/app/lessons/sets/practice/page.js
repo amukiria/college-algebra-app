@@ -191,7 +191,7 @@ export default function SetsPractice() {
       </div>
 
       <div className="mt-8 flex justify-center">
-        <Link href="/set-practice-2" passHref>
+        <Link href="/lessons/sets/practice-2" passHref>
           <button className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors">
             Set Explorer 2 - 3 Sets
           </button>
