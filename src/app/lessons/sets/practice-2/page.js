@@ -131,7 +131,7 @@ export default function SetsPractice() {
 
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
-      <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer</h1>
+      <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer 2</h1>
 
       {/* Input for Set A */}
       <div className="mb-4">
