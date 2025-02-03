@@ -159,67 +159,61 @@ export default function PolynomialPuzzle() {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Polynomial Puzzle Game</h1>
-      <p>Enter two polynomials and select an operation to perform.</p>
+    <div className="p-6 font-sans bg-gray-100 rounded-lg shadow-lg max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold text-center mb-4 text-blue-600">Polynomial Puzzle Game</h1>
+      <p className="text-center mb-6 text-lg">Enter two polynomials and select an operation to perform.</p>
 
       {/* Input fields for polynomials */}
-      <div style={{ marginBottom: '20px' }}>
-        <label>
-          Polynomial 1:
-          <input
-            type="text"
-            value={poly1}
-            onChange={(e) => setPoly1(e.target.value)}
-            placeholder="e.g., 3x^2 + 2x + 5"
-            style={{ marginLeft: '10px', padding: '5px' }}
-          />
-        </label>
+      <div className="mb-4">
+        <label className="block text-lg mb-2">Polynomial 1:</label>
+        <input
+          type="text"
+          value={poly1}
+          onChange={(e) => setPoly1(e.target.value)}
+          placeholder="e.g., 3x^2 + 2x + 5"
+          className="w-full p-3 border border-gray-300 rounded-lg"
+        />
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <label>
-          Polynomial 2:
-          <input
-            type="text"
-            value={poly2}
-            onChange={(e) => setPoly2(e.target.value)}
-            placeholder="e.g., 4x^2 - 3x + 2"
-            style={{ marginLeft: '10px', padding: '5px' }}
-          />
-        </label>
+      <div className="mb-4">
+        <label className="block text-lg mb-2">Polynomial 2:</label>
+        <input
+          type="text"
+          value={poly2}
+          onChange={(e) => setPoly2(e.target.value)}
+          placeholder="e.g., 4x^2 - 3x + 2"
+          className="w-full p-3 border border-gray-300 rounded-lg"
+        />
       </div>
 
       {/* Operation selection */}
-      <div style={{ marginBottom: '20px' }}>
-        <label>
-          Operation:
-          <select
-            value={operation}
-            onChange={(e) => setOperation(e.target.value)}
-            style={{ marginLeft: '10px', padding: '5px' }}
-          >
-            <option value="add">Add</option>
-            <option value="subtract">Subtract</option>
-            <option value="multiply">Multiply</option>
-            <option value="divide">Divide</option>
-          </select>
-        </label>
+      <div className="mb-4">
+        <label className="block text-lg mb-2">Operation:</label>
+        <select
+          value={operation}
+          onChange={(e) => setOperation(e.target.value)}
+          className="w-full p-3 border border-gray-300 rounded-lg"
+        >
+          <option value="add">Add</option>
+          <option value="subtract">Subtract</option>
+          <option value="multiply">Multiply</option>
+          <option value="divide">Divide</option>
+        </select>
       </div>
 
       {/* Buttons for Calculate and Reset */}
-      <div style={{ marginBottom: '20px' }}>
+      <div className="mb-4">
         <button
           onClick={() => {
             if (validateInput()) handleOperation();
           }}
-          style={{ padding: '10px 20px', backgroundColor: '#0070f3', color: 'white', border: 'none', borderRadius: '5px', marginRight: '10px' }}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg mr-3 hover:bg-blue-700"
         >
           Calculate
         </button>
         <button
           onClick={resetFields}
-          style={{ padding: '10px 20px', backgroundColor: '#ff4d4d', color: 'white', border: 'none', borderRadius: '5px' }}
+          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
         >
           Reset
         </button>
@@ -227,26 +221,26 @@ export default function PolynomialPuzzle() {
 
       {/* Display errors */}
       {error && (
-        <div style={{ marginTop: '20px', color: 'red' }}>
+        <div className="text-red-600 mb-4">
           <strong>Error:</strong> {error}
         </div>
       )}
 
       {/* Display result */}
       {result && (
-        <div style={{ marginTop: '20px' }}>
-          <h2>Result:</h2>
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-2">Result:</h2>
           <p>{result}</p>
         </div>
       )}
 
       {/* Display history of operations */}
       {history.length > 0 && (
-        <div style={{ marginTop: '20px' }}>
-          <h2>Operation History:</h2>
+        <div className="mt-6">
+          <h2 className="text-2xl font-semibold mb-2">Operation History:</h2>
           <ul>
             {history.map((entry, index) => (
-              <li key={index}>
+              <li key={index} className="mb-2">
                 <strong>Operation {index + 1}:</strong> {entry.poly1} {entry.operation} {entry.poly2} = {entry.result}
               </li>
             ))}
