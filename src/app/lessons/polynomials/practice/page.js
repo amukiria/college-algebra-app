@@ -12,40 +12,127 @@ export default function PolynomialPuzzle() {
   const [history, setHistory] = useState([]); // To store operation history
   const [error, setError] = useState(''); // To display errors
 
+  // Helper function to remove leading zeros from a polynomial
+  const removeLeadingZeros = (poly) => {
+    let i = 0;
+    while (i < poly.length && poly[i] === 0) i++;
+    return poly.slice(i);
+  };
+
+  // Polynomial long division function
+  const polynomialLongDivision = (dividend, divisor) => {
+    dividend = removeLeadingZeros(dividend);
+    divisor = removeLeadingZeros(divisor);
+
+    if (divisor.length === 0) throw new Error('Division by zero polynomial.');
+
+    const degreeDividend = dividend.length - 1;
+    const degreeDivisor = divisor.length - 1;
+
+    if (degreeDivisor > degreeDividend) {
+      return { quotient: [0], remainder: dividend };
+    }
+
+    let quotient = new Array(degreeDividend - degreeDivisor + 1).fill(0);
+    let remainder = [...dividend];
+
+    for (let i = 0; i <= degreeDividend - degreeDivisor; i++) {
+      const coeff = remainder[i] / divisor[0];
+      quotient[i] = coeff;
+
+      for (let j = 0; j <= degreeDivisor; j++) {
+        remainder[i + j] -= coeff * divisor[j];
+      }
+    }
+
+    quotient = removeLeadingZeros(quotient);
+    remainder = removeLeadingZeros(remainder);
+
+    return { quotient, remainder };
+  };
+
+  // Function to parse a polynomial string into an array of coefficients
+  const parsePolynomial = (polyStr) => {
+    const terms = polyStr.split(/(?=[+-])/); // Split into individual terms
+    const degree = Math.max(
+      ...terms.map((term) => {
+        const match = term.match(/x\^(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+      })
+    );
+
+    const coefficients = new Array(degree + 1).fill(0);
+
+    terms.forEach((term) => {
+      const match = term.match(/([-+]?\d*)x\^(\d+)/);
+      if (match) {
+        const coeff = match[1] === '-' || match[1] === '+' || match[1] === '' ? parseInt(match[1] + '1', 10) : parseInt(match[1], 10);
+        const power = parseInt(match[2], 10);
+        coefficients[degree - power] = coeff;
+      } else if (term.match(/\d+/)) {
+        coefficients[degree] = parseInt(term, 10);
+      }
+    });
+
+    return coefficients;
+  };
+
+  // Function to format a coefficient array into a polynomial string
+  const formatPolynomial = (coefficients) => {
+    return coefficients
+      .map((coeff, index) => {
+        const power = coefficients.length - 1 - index;
+        if (coeff === 0) return '';
+        return `${coeff > 0 && index !== 0 ? '+' : ''}${coeff !== 1 && coeff !== -1 ? coeff : coeff === -1 ? '-' : ''}${power > 0 ? 'x' : ''}${power > 1 ? `^${power}` : ''}`;
+      })
+      .filter((term) => term !== '')
+      .join('') || '0';
+  };
+
   // Function to handle polynomial operations
   const handleOperation = () => {
     setError(''); // Clear previous errors
     try {
-      // Parse the polynomials using algebra.js
-      const p1 = algebra.parse(poly1);
-      const p2 = algebra.parse(poly2);
+      if (operation === 'divide') {
+        // Parse polynomials into coefficient arrays
+        const dividend = parsePolynomial(poly1);
+        const divisor = parsePolynomial(poly2);
 
-      let res;
-      switch (operation) {
-        case 'add':
-          res = p1.add(p2); // Add polynomials
-          break;
-        case 'subtract':
-          res = p1.subtract(p2); // Subtract polynomials
-          break;
-        case 'multiply':
-          res = p1.multiply(p2); // Multiply polynomials
-          break;
-        case 'divide':
-          // Check if the divisor is a constant (number or fraction)
-          if (p2.terms.length === 1 && p2.terms[0].variables.length === 0) {
-            res = p1.divide(p2); // Divide by a constant
-          } else {
-            throw new Error('Polynomial division is only supported for constants (e.g., 2, 3x^0).');
-          }
-          break;
-        default:
-          throw new Error('Invalid operation selected.');
+        // Perform polynomial long division
+        const { quotient, remainder } = polynomialLongDivision(dividend, divisor);
+
+        // Format the result
+        const quotientStr = formatPolynomial(quotient);
+        const remainderStr = formatPolynomial(remainder);
+        const res = `Quotient: ${quotientStr}, Remainder: ${remainderStr}`;
+
+        // Update result and history
+        setResult(res);
+        setHistory([...history, { poly1, poly2, operation, result: res }]);
+      } else {
+        // Use algebra.js for other operations
+        const p1 = algebra.parse(poly1);
+        const p2 = algebra.parse(poly2);
+
+        let res;
+        switch (operation) {
+          case 'add':
+            res = p1.add(p2);
+            break;
+          case 'subtract':
+            res = p1.subtract(p2);
+            break;
+          case 'multiply':
+            res = p1.multiply(p2);
+            break;
+          default:
+            throw new Error('Invalid operation selected.');
+        }
+
+        // Update result and history
+        setResult(res.toString());
+        setHistory([...history, { poly1, poly2, operation, result: res.toString() }]);
       }
-
-      // Update result and history
-      setResult(res.toString());
-      setHistory([...history, { poly1, poly2, operation, result: res.toString() }]);
     } catch (error) {
       setError(`Error: ${error.message}`);
       setResult('');

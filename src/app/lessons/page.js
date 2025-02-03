@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 const topics = [
-  { title: "Sets", path: "/lessons/sets", description: "Learn and practice operations on sets." },
-  { title: "Polynomials", path: "/lessons/polynomials", description: "Master polynomials and their operations." },
-  { title: "Factoring Expressions", path: "/lessons/factoring", description: "Learn advanced factoring techniques." },
-  { title: "Rational Expressions", path: "/lessons/rational-expressions", description: "Simplify and operate on rational expressions." },
-  { title: "Linear Equations", path: "/lessons/linear-equations", description: "Solve linear equations and real-world problems." },
-  { title: "Quadratic Equations", path: "/lessons/quadratics", description: "Solve quadratic equations using multiple methods." },
+  { title: "Sets", path: "http://localhost:3000/lessons/sets", description: "Learn and practice operations on sets." },
+  { title: "Polynomials", path: "http://localhost:3000/lessons/polynomials", description: "Master polynomials and their operations." },
+  { title: "Factoring Expressions", path: "http://localhost:3000/lessons/factoring", description: "Learn advanced factoring techniques." },
+  { title: "Rational Expressions", path: "http://localhost:3000/lessons/rational-expressions", description: "Simplify and operate on rational expressions." },
+  { title: "Linear Equations", path: "http://localhost:3000/lessons/linear-equations", description: "Solve linear equations and real-world problems." },
+  { title: "Quadratic Equations", path: "http://localhost:3000/lessons/quadratics", description: "Solve quadratic equations using multiple methods." },
 ];
 
 export default function Dashboard() {
@@ -19,18 +19,22 @@ export default function Dashboard() {
             <h2 className="text-2xl font-bold text-accent">{topic.title}</h2>
             <p className="mt-2">{topic.description}</p>
             <div className="mt-4">
+              {/* View Lesson link pointing to full URL */}
               <Link
-                href={`${topic.path}/lesson`}
+                href={topic.path}
                 className="text-blue-500 hover:underline mr-4"
               >
                 View Lesson
               </Link>
-              <Link
-                href={`${topic.path}/practice`}
-                className="text-blue-500 hover:underline"
-              >
-                Practice Exercises
-              </Link>
+              {/* Practice Exercises link for Polynomials */}
+              {topic.title === "Polynomials" && (
+                <Link
+                  href={`${topic.path}/practice`}
+                  className="text-blue-500 hover:underline"
+                >
+                  Practice Exercises
+                </Link>
+              )}
             </div>
           </div>
         ))}
