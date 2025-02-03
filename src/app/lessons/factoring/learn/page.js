@@ -20,7 +20,7 @@ const ProblemCard = ({ problem, answer, feedback, hintVisible, onInputChange, on
       />
       <button
         onClick={() => onToggleHint(problem.id)}
-        className="text-sm text-blue-600 hover:underline mt-1"
+        className="text-sm text-accent hover:text-accentDark underline mt-1 w-fit transition-colors"
         aria-expanded={hintVisible}
         aria-controls={`hint-${problem.id}`}
       >
@@ -153,16 +153,16 @@ export default function FactoringLesson() {
             />
           ))}
         </ul>
-        <div className="mt-4 space-x-4">
+        <div className="mt-4 flex space-x-4">
           <button
             onClick={checkAnswers}
-            className="px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors"
+            className="px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors w-fit"
           >
             Check Answers
           </button>
           <button
             onClick={resetPractice}
-            className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors"
+            className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors w-fit"
           >
             Reset Practice
           </button>
