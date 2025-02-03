@@ -151,6 +151,9 @@ export default function PolynomialsLesson() {
         <div className="mt-6">
           <Line data={polynomialData} options={polynomialOptions} />
         </div>
+        <p className="mt-4 text-sm text-gray-600">
+          * Note: Graphing polynomials will be covered in a subsequent lesson.
+        </p>
       </div>
 
       {/* Factoring Polynomials */}
@@ -165,45 +168,25 @@ export default function PolynomialsLesson() {
             <strong>Greatest Common Factor (GCF):</strong> Factor out the largest common term.
           </li>
           <li>
-            <strong>Difference of Squares:</strong> <Latex>{"$a^2 - b^2 = (a + b)(a - b)$"}</Latex>.
+            <strong>Factoring Trinomials:</strong> Find two binomials that multiply to give the original trinomial.
           </li>
           <li>
-            <strong>Trinomial Factoring:</strong> Factor quadratic trinomials into binomials (e.g.,{" "}
-            <Latex>{"$x^2 + 5x + 6 = (x + 2)(x + 3)$"}</Latex>).
-          </li>
-          <li>
-            <strong>Grouping:</strong> Group terms to factor by grouping.
+            <strong>Difference of Squares:</strong> Factor expressions like <Latex>{"$a^2 - b^2$"}</Latex> into{" "}
+            <Latex>{"$(a - b)(a + b)$"}</Latex>.
           </li>
         </ul>
-      </div>
-
-      {/* Real-World Applications */}
-      <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-darkNavy">Real-World Applications of Polynomials</h2>
-        <p>Polynomials are used in various fields to model and solve problems:</p>
-        <ul className="list-disc ml-6 mt-2">
-          <li>
-            <strong>Physics:</strong> Modeling motion, trajectories, and forces.
-          </li>
-          <li>
-            <strong>Economics:</strong> Representing cost, revenue, and profit functions.
-          </li>
-          <li>
-            <strong>Computer Science:</strong> Algorithm design and data interpolation.
-          </li>
-          <li>
-            <strong>Engineering:</strong> Designing structures and analyzing systems.
-          </li>
-        </ul>
-      </div>
-
-      {/* Fun Fact */}
-      <div className="p-4 bg-primary rounded">
-        <h3 className="text-xl font-semibold text-darkNavy">Fun Fact:</h3>
-        <p>
-          Polynomials are the foundation of calculus, where they are used to approximate more complex functions
-          using Taylor and Maclaurin series!
+        <p className="mt-4 text-sm text-gray-600">
+          * Note: Factoring will be covered in a subsequent lesson.
         </p>
+      </div>
+
+      {/* Conclusion and Practice Polynomials Button */}
+      <div className="mt-8 text-center">
+        <a href="/lessons/polynomials/practice">
+          <button className="bg-accent text-white py-2 px-6 rounded-full hover:bg-hover transition">
+            Practice Polynomials
+          </button>
+        </a>
       </div>
     </div>
   );
