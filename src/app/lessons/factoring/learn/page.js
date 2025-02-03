@@ -1,14 +1,15 @@
-"use client"
+"use client";
 import React, { useState } from 'react';
 
 export default function FactoringLesson() {
   const [answers, setAnswers] = useState({});
   const [feedback, setFeedback] = useState({});
+  const [hintsVisible, setHintsVisible] = useState({});
 
   const problems = [
-    { id: 1, expression: 'x² - 9', solution: '(x + 3)(x - 3)' },
-    { id: 2, expression: '3x² + 6x', solution: '3x(x + 2)' },
-    { id: 3, expression: 'x² + 7x + 12', solution: '(x + 3)(x + 4)' },
+    { id: 1, expression: 'x² - 9', solution: '(x + 3)(x - 3)', hint: 'Think of the difference of squares.' },
+    { id: 2, expression: '3x² + 6x', solution: '3x(x + 2)', hint: 'Factor out the greatest common factor (GCF).' },
+    { id: 3, expression: 'x² + 7x + 12', solution: '(x + 3)(x + 4)', hint: 'Find two numbers that multiply to 12 and add to 7.' },
   ];
 
   const handleInputChange = (id, value) => {
@@ -18,9 +19,16 @@ export default function FactoringLesson() {
   const checkAnswers = () => {
     const feedbackObj = {};
     problems.forEach((problem) => {
-      feedbackObj[problem.id] = answers[problem.id] === problem.solution;
+      feedbackObj[problem.id] = answers[problem.id]?.trim() === problem.solution;
     });
     setFeedback(feedbackObj);
+  };
+
+  const toggleHint = (id) => {
+    setHintsVisible((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
   };
 
   return (
@@ -68,26 +76,40 @@ export default function FactoringLesson() {
         <ul className="space-y-4">
           {problems.map((problem) => (
             <li key={problem.id} className="flex flex-col space-y-2">
-              <label className="text-lg font-medium">
-                {problem.expression}:
-              </label>
+              <label className="text-lg font-medium">{problem.expression}:</label>
+
               <input
                 type="text"
                 className="p-2 border border-gray-300 rounded w-full max-w-md"
-                placeholder="Enter your answer"
+                placeholder="Enter factored form, e.g., (x + 2)(x + 3)"
                 onChange={(e) => handleInputChange(problem.id, e.target.value)}
               />
-              {feedback[problem.id] !== undefined && (
-                <span className={`text-sm ${feedback[problem.id] ? 'text-green-600' : 'text-red-600'}`}>
-                  {feedback[problem.id] ? 'Correct!' : 'Incorrect. Try again!'}
-                </span>
+
+              <div className="flex space-x-4 mt-2">
+                <button
+                  onClick={() => toggleHint(problem.id)}
+                  className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                >
+                  {hintsVisible[problem.id] ? "Hide Hint" : "Show Hint"}
+                </button>
+
+                {feedback[problem.id] !== undefined && (
+                  <span className={`text-sm ${feedback[problem.id] ? 'text-green-600' : 'text-red-600'}`}>
+                    {feedback[problem.id] ? 'Correct!' : 'Incorrect. Try again!'}
+                  </span>
+                )}
+              </div>
+
+              {hintsVisible[problem.id] && (
+                <p className="text-sm text-gray-600 bg-lightNeutral p-2 rounded mt-1">{problem.hint}</p>
               )}
             </li>
           ))}
         </ul>
+
         <button
           onClick={checkAnswers}
-          className="mt-4 px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors"
+          className="mt-6 px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors"
         >
           Check Answers
         </button>
