@@ -2,52 +2,6 @@
 
 import React, { useState } from 'react';
 
-// Reusable ProblemCard Component
-const ProblemCard = ({ problem, answer, feedback, hintVisible, onInputChange, onToggleHint }) => {
-  return (
-    <li className="flex flex-col space-y-2">
-      <label className="text-lg font-medium" htmlFor={`problem-${problem.id}`}>
-        {problem.expression}:
-      </label>
-      <input
-        type="text"
-        id={`problem-${problem.id}`}
-        className="p-2 border border-gray-300 rounded w-full max-w-md"
-        placeholder="Enter factored form"
-        value={answer || ''}
-        onChange={(e) => onInputChange(problem.id, e.target.value)}
-        aria-describedby={`hint-${problem.id}`}
-      />
-      <button
-        onClick={() => onToggleHint(problem.id)}
-        className="text-sm text-accent hover:text-accentDark underline mt-1 w-fit transition-colors"
-        aria-expanded={hintVisible}
-        aria-controls={`hint-${problem.id}`}
-      >
-        {hintVisible ? 'Hide Hint' : 'Show Hint'}
-      </button>
-      {hintVisible && (
-        <span id={`hint-${problem.id}`} className="text-sm text-gray-600">
-          Hint: {problem.hint}
-        </span>
-      )}
-      {feedback !== undefined && (
-        <span
-          className={`text-sm ${feedback ? 'text-green-600' : 'text-red-600'}`}
-          role="alert"
-        >
-          {feedback ? 'Correct!' : 'Incorrect. Try again!'}
-        </span>
-      )}
-    </li>
-  );
-};
-
-// Helper function to normalize answers
-const normalizeAnswer = (answer) => {
-  return answer.replace(/\s+/g, '').replace(/[()]/g, '');
-};
-
 export default function FactoringLesson() {
   const [answers, setAnswers] = useState({});
   const [feedback, setFeedback] = useState({});
@@ -60,14 +14,14 @@ export default function FactoringLesson() {
   ];
 
   const handleInputChange = (id, value) => {
-    setAnswers((prevAnswers) => ({ ...prevAnswers, [id]: value }));
+    setAnswers({ ...answers, [id]: value });
   };
 
   const checkAnswers = () => {
     const feedbackObj = {};
     problems.forEach((problem) => {
-      const normalizedAnswer = normalizeAnswer(answers[problem.id] || '');
-      const normalizedSolution = normalizeAnswer(problem.solution);
+      const normalizedAnswer = answers[problem.id]?.replace(/\s+/g, '').replace(/[()]/g, '');
+      const normalizedSolution = problem.solution.replace(/\s+/g, '').replace(/[()]/g, '');
       feedbackObj[problem.id] = normalizedAnswer === normalizedSolution;
     });
     setFeedback(feedbackObj);
@@ -82,11 +36,6 @@ export default function FactoringLesson() {
   const toggleHint = (id) => {
     setHints((prevHints) => ({ ...prevHints, [id]: !prevHints[id] }));
   };
-
-  // Calculate progress
-  const totalProblems = problems.length;
-  const correctAnswers = Object.values(feedback).filter((val) => val).length;
-  const progress = totalProblems > 0 ? Math.round((correctAnswers / totalProblems) * 100) : 0;
 
   return (
     <div className="p-8 bg-secondary min-h-screen text-text">
@@ -142,35 +91,47 @@ export default function FactoringLesson() {
         <p className="text-lg mb-4">Factor the following expressions:</p>
         <ul className="space-y-4">
           {problems.map((problem) => (
-            <ProblemCard
-              key={problem.id}
-              problem={problem}
-              answer={answers[problem.id]}
-              feedback={feedback[problem.id]}
-              hintVisible={hints[problem.id]}
-              onInputChange={handleInputChange}
-              onToggleHint={toggleHint}
-            />
+            <li key={problem.id} className="flex flex-col space-y-2">
+              <label className="text-lg font-medium">
+                {problem.expression}:
+              </label>
+              <input
+                type="text"
+                className="p-2 border border-gray-300 rounded w-full max-w-md"
+                placeholder="Enter factored form"
+                value={answers[problem.id] || ''}
+                onChange={(e) => handleInputChange(problem.id, e.target.value)}
+              />
+              <button
+                onClick={() => toggleHint(problem.id)}
+                className="text-sm text-blue-600 hover:underline mt-1"
+              >
+                {hints[problem.id] ? 'Hide Hint' : 'Show Hint'}
+              </button>
+              {hints[problem.id] && (
+                <span className="text-sm text-gray-600">Hint: {problem.hint}</span>
+              )}
+              {feedback[problem.id] !== undefined && (
+                <span className={`text-sm ${feedback[problem.id] ? 'text-green-600' : 'text-red-600'}`}>
+                  {feedback[problem.id] ? 'Correct!' : 'Incorrect. Try again!'}
+                </span>
+              )}
+            </li>
           ))}
         </ul>
-        <div className="mt-4 flex space-x-4">
+        <div className="mt-4 space-x-4">
           <button
             onClick={checkAnswers}
-            className="px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors w-fit"
+            className="px-6 py-2 bg-accent text-white rounded hover:bg-accentDark transition-colors"
           >
             Check Answers
           </button>
           <button
             onClick={resetPractice}
-            className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors w-fit"
+            className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition-colors"
           >
             Reset Practice
           </button>
-        </div>
-        <div className="mt-4">
-          <p className="text-lg">
-            Progress: {correctAnswers} out of {totalProblems} correct ({progress}%)
-          </p>
         </div>
       </section>
     </div>
