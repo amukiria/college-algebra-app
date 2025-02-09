@@ -55,14 +55,16 @@ const ProblemCard = ({ problem, answer, feedback, hintVisible, showSolution, onI
       />
 
       <div className="space-y-2">
-        <button
-          onClick={() => onToggleHint(problem.id)}
-          className="text-sm text-coral bg-lightNeutral px-2 py-1 rounded hover:bg-salmon hover:text-white transition-colors mt-1 w-fit"
-        >
-          {hintVisible ? 'Hide Hint' : 'Show Hint'}
-        </button>
+        {problem.hint && (
+          <button
+            onClick={() => onToggleHint(problem.id)}
+            className="text-sm text-coral bg-lightNeutral px-2 py-1 rounded hover:bg-salmon hover:text-white transition-colors mt-1 w-fit"
+          >
+            {hintVisible ? 'Hide Hint' : 'Show Hint'}
+          </button>
+        )}
 
-        {hintVisible && (
+        {hintVisible && problem.hint && (
           <div className="text-sm text-gray-600 bg-yellow-50 p-2 rounded">
             {problem.hint}
           </div>
@@ -90,12 +92,17 @@ const ProblemCard = ({ problem, answer, feedback, hintVisible, showSolution, onI
 // Solver Mode Component
 const SolverMode = ({ onSolve }) => {
   const [expression, setExpression] = useState('');
-  const [solution, setSolution] = useState(null);
+  const [solutionInput, setSolutionInput] = useState('');
+  const [solutionSteps, setSolutionSteps] = useState(null);
   const [error, setError] = useState('');
 
   const handleSolve = () => {
     if (!expression.trim()) {
       setError('Please enter a valid expression.');
+      return;
+    }
+    if (!solutionInput.trim()) {
+      setError('Please enter the solution.');
       return;
     }
     setError('');
@@ -105,8 +112,8 @@ const SolverMode = ({ onSolve }) => {
       'Step 2: Apply the appropriate factoring technique.',
       'Step 3: Simplify and write the factored form.'
     ];
-    setSolution({ steps });
-    onSolve(expression, steps);
+    setSolutionSteps({ steps });
+    onSolve(expression, solutionInput, steps);
   };
 
   return (
@@ -120,6 +127,13 @@ const SolverMode = ({ onSolve }) => {
           onChange={(e) => setExpression(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
         />
+        <input
+          type="text"
+          placeholder="Enter the factored solution (e.g., (x+3)(x-3))"
+          value={solutionInput}
+          onChange={(e) => setSolutionInput(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
         <button
           onClick={handleSolve}
           className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
@@ -127,10 +141,10 @@ const SolverMode = ({ onSolve }) => {
           Solve
         </button>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {solution && (
+        {solutionSteps && (
           <div className="mt-4 space-y-2">
             <h4 className="font-medium text-gray-800">Solution Steps:</h4>
-            {solution.steps.map((step, index) => (
+            {solutionSteps.steps.map((step, index) => (
               <AnimatedStep key={index} step={step} index={index} />
             ))}
           </div>
@@ -140,7 +154,7 @@ const SolverMode = ({ onSolve }) => {
   );
 };
 
-export default function FactoringLesson() {
+export default function FactoringSolver() {
   const [mode, setMode] = useState('practice'); 
   const [answers, setAnswers] = useState({});
   const [feedback, setFeedback] = useState({});
@@ -218,8 +232,15 @@ export default function FactoringLesson() {
     setShownSolutionId(null);
   };
 
-  const handleAddCustomProblem = (problem) => {
-    setCustomProblems([...customProblems, problem]);
+  const handleAddCustomProblem = (expression, solution, steps) => {
+    const newProblem = {
+      id: Date.now(),
+      expression,
+      solution,
+      steps,
+      hint: 'Custom problem - check your solution steps.'
+    };
+    setCustomProblems([...customProblems, newProblem]);
   };
 
   const totalProblems = allProblems.length;
@@ -290,9 +311,7 @@ export default function FactoringLesson() {
           </section>
         </>
       ) : (
-        <>
-          <SolverMode onSolve={(expression, steps) => handleAddCustomProblem({ id: Date.now(), expression, steps })} />
-        </>
+        <SolverMode onSolve={(expr, sol, steps) => handleAddCustomProblem(expr, sol, steps)} />
       )}
     </div>
   );
