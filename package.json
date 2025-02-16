@@ -15,7 +15,6 @@
     "axios": "^1.7.9",
     "d3": "^7.9.0",
     "dotenv": "^16.4.7",
-    "firebase": "^11.3.1",
     "framer-motion": "^12.4.1",
     "mathjs": "^14.2.0",
     "mongoose": "^8.9.5",
