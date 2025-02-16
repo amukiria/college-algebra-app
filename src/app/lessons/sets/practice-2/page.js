@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import * as d3 from "d3";
 import * as venn from "venn.js";
 import Link from "next/link";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
 export default function SetsPractice() {
   const [setA, setSetA] = useState([]);
@@ -35,30 +36,23 @@ export default function SetsPractice() {
   };
 
   const handleIntersection = () => {
-    let intersection = [...new Set(setA)].filter((x) =>
-      setB.includes(x) && setC.includes(x)
+    let intersection = [...new Set(setA)].filter(
+      (x) => setB.includes(x) && setC.includes(x)
     );
     setResult(`Intersection: {${intersection.join(", ")}}`);
     setOperation("Intersection");
 
-    setVennData([
+    const newData = [
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
       { sets: ["C"], size: setC.length },
       { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
       { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
       { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
-      { sets: ["A", "B", "C"], size: intersection.length }, // Intersection of A, B, and C
-    ]);
-    updateVennDiagram([
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["C"], size: setC.length },
-      { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
-      { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
-      { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
-      { sets: ["A", "B", "C"], size: intersection.length }, // Intersection of A, B, and C
-    ]);
+      { sets: ["A", "B", "C"], size: intersection.length },
+    ];
+    setVennData(newData);
+    updateVennDiagram(newData);
   };
 
   const handleUnion = () => {
@@ -66,7 +60,7 @@ export default function SetsPractice() {
     setResult(`Union: {${union.join(", ")}}`);
     setOperation("Union");
 
-    setVennData([
+    const newData = [
       { sets: ["A"], size: setA.length },
       { sets: ["B"], size: setB.length },
       { sets: ["C"], size: setC.length },
@@ -74,16 +68,9 @@ export default function SetsPractice() {
       { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
       { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
       { sets: ["A", "B", "C"], size: union.length },
-    ]);
-    updateVennDiagram([
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["C"], size: setC.length },
-      { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
-      { sets: ["A", "C"], size: [...new Set(setA)].filter((x) => setC.includes(x)).length },
-      { sets: ["B", "C"], size: [...new Set(setB)].filter((x) => setC.includes(x)).length },
-      { sets: ["A", "B", "C"], size: union.length },
-    ]);
+    ];
+    setVennData(newData);
+    updateVennDiagram(newData);
   };
 
   const resetVennDiagram = () => {
@@ -95,7 +82,7 @@ export default function SetsPractice() {
     setInputC("");
     setResult("");
     setOperation("");
-    setVennData([
+    const resetData = [
       { sets: ["A"], size: 0 },
       { sets: ["B"], size: 0 },
       { sets: ["C"], size: 0 },
@@ -103,16 +90,9 @@ export default function SetsPractice() {
       { sets: ["A", "C"], size: 0 },
       { sets: ["B", "C"], size: 0 },
       { sets: ["A", "B", "C"], size: 0 },
-    ]);
-    updateVennDiagram([
-      { sets: ["A"], size: 0 },
-      { sets: ["B"], size: 0 },
-      { sets: ["C"], size: 0 },
-      { sets: ["A", "B"], size: 0 },
-      { sets: ["A", "C"], size: 0 },
-      { sets: ["B", "C"], size: 0 },
-      { sets: ["A", "B", "C"], size: 0 },
-    ]);
+    ];
+    setVennData(resetData);
+    updateVennDiagram(resetData);
   };
 
   useEffect(() => {
@@ -130,82 +110,89 @@ export default function SetsPractice() {
   }, [setA, setB, setC]);
 
   return (
-    <div className="p-8 bg-secondary min-h-screen text-text">
-      <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer</h1>
+    <>
+      <SignedIn>
+        <div className="p-8 bg-secondary min-h-screen text-text">
+          <h1 className="text-4xl font-bold text-accent mb-8">Practice: Sets Explorer</h1>
 
-      {/* Input for Set A */}
-      <div className="mb-4">
-        <label className="block mb-2">Enter Set A (comma separated):</label>
-        <input
-          type="text"
-          value={inputA}
-          onChange={(e) => {
-            setInputA(e.target.value);
-            setSetA(e.target.value.split(",").map((item) => parseInt(item.trim())));
-          }}
-          className="p-2 border rounded mb-4"
-        />
-      </div>
+          {/* Input for Set A */}
+          <div className="mb-4">
+            <label className="block mb-2">Enter Set A (comma separated):</label>
+            <input
+              type="text"
+              value={inputA}
+              onChange={(e) => {
+                setInputA(e.target.value);
+                setSetA(e.target.value.split(",").map((item) => parseInt(item.trim())));
+              }}
+              className="p-2 border rounded mb-4"
+            />
+          </div>
 
-      {/* Input for Set B */}
-      <div className="mb-4">
-        <label className="block mb-2">Enter Set B (comma separated):</label>
-        <input
-          type="text"
-          value={inputB}
-          onChange={(e) => {
-            setInputB(e.target.value);
-            setSetB(e.target.value.split(",").map((item) => parseInt(item.trim())));
-          }}
-          className="p-2 border rounded mb-4"
-        />
-      </div>
+          {/* Input for Set B */}
+          <div className="mb-4">
+            <label className="block mb-2">Enter Set B (comma separated):</label>
+            <input
+              type="text"
+              value={inputB}
+              onChange={(e) => {
+                setInputB(e.target.value);
+                setSetB(e.target.value.split(",").map((item) => parseInt(item.trim())));
+              }}
+              className="p-2 border rounded mb-4"
+            />
+          </div>
 
-      {/* Input for Set C */}
-      <div className="mb-4">
-        <label className="block mb-2">Enter Set C (comma separated):</label>
-        <input
-          type="text"
-          value={inputC}
-          onChange={(e) => {
-            setInputC(e.target.value);
-            setSetC(e.target.value.split(",").map((item) => parseInt(item.trim())));
-          }}
-          className="p-2 border rounded mb-4"
-        />
-      </div>
+          {/* Input for Set C */}
+          <div className="mb-4">
+            <label className="block mb-2">Enter Set C (comma separated):</label>
+            <input
+              type="text"
+              value={inputC}
+              onChange={(e) => {
+                setInputC(e.target.value);
+                setSetC(e.target.value.split(",").map((item) => parseInt(item.trim())));
+              }}
+              className="p-2 border rounded mb-4"
+            />
+          </div>
 
-      {/* Buttons for Operations */}
-      <div className="mb-4">
-        <button
-          onClick={handleIntersection}
-          className="bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mr-2"
-        >
-          Compute Intersection
-        </button>
-        <button
-          onClick={handleUnion}
-          className="bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mr-2"
-        >
-          Compute Union
-        </button>
-        <button
-          onClick={resetVennDiagram}
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500 transition-colors"
-        >
-          Reset
-        </button>
-      </div>
+          {/* Buttons for Operations */}
+          <div className="mb-4">
+            <button
+              onClick={handleIntersection}
+              className="bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mr-2"
+            >
+              Compute Intersection
+            </button>
+            <button
+              onClick={handleUnion}
+              className="bg-accent text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mr-2"
+            >
+              Compute Union
+            </button>
+            <button
+              onClick={resetVennDiagram}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-500 transition-colors"
+            >
+              Reset
+            </button>
+          </div>
 
-      {/* Result */}
-      {result && (
-        <div className="mt-4 bg-primary p-4 rounded">
-          <p>{result}</p>
+          {/* Result */}
+          {result && (
+            <div className="mt-4 bg-primary p-4 rounded">
+              <p>{result}</p>
+            </div>
+          )}
+
+          {/* Venn Diagram */}
+          <div id="venn" className="mt-8"></div>
         </div>
-      )}
-
-      {/* Venn Diagram */}
-      <div id="venn" className="mt-8"></div>
-    </div>
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
   );
 }

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 const TopBar = () => {
   return (
@@ -17,22 +20,146 @@ const TopBar = () => {
           <Link href="/" className="hover:text-coral">
             Home
           </Link>
-          <Link href="/lessons" className="hover:text-coral">
-            Lessons
-          </Link>
-          <Link href="/practice" className="hover:text-coral">
-            Practice
-          </Link>
-          <Link href="/about" className="hover:text-coral">
-            About
-          </Link>
+
+          {/* Lessons with Dropdown */}
+          <div className="relative group">
+            <a
+              href="#"
+              onClick={(e) => e.preventDefault()}
+              className="hover:text-coral"
+            >
+              Lessons
+            </a>
+            <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
+              <ul>
+                <li>
+                  <Link
+                    href="/lessons/sets/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Sets
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/polynomials/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Polynomials
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/factoring/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Factoring Expressions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/rational-expressions/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Rational Expressions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/linear-equations/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Linear Equations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/quadratic-equation/learn"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Quadratic Equation
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Practice with Dropdown */}
+          <div className="relative group">
+            <a
+              href="#"
+              onClick={(e) => e.preventDefault()}
+              className="hover:text-coral"
+            >
+              Practice
+            </a>
+            <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
+              <ul>
+                <li>
+                  <Link
+                    href="/lessons/sets/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Sets
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/polynomials/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Polynomials
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/factoring/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Factoring Expressions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/rational-expressions/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Rational Expressions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/linear-equations/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Linear Equations
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/lessons/quadratic-equation/practice"
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    Quadratic Equation
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
         </nav>
 
         {/* User Actions */}
-        <div>
-          <button className="bg-coral text-white px-4 py-2 rounded hover:bg-salmon transition-all">
-            Sign In
-          </button>
+        <div className="flex items-center space-x-4">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="bg-coral text-white px-4 py-2 rounded hover:bg-salmon transition-all">
+                Sign In
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
         </div>
       </div>
     </header>

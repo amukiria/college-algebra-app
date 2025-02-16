@@ -4,23 +4,28 @@
 
 /* Global Styles */
 body {
-  @apply bg-background text-grayNeutral font-body;
+  /* Use the background color from our palette instead of white */
+  @apply bg-background text-text font-body;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @apply text-darkNavy font-heading;
+  @apply text-primary font-heading;
 }
 
 a {
-  @apply text-coral underline hover:text-salmon transition-colors;
+  @apply text-accent underline hover:text-accent transition-colors;
 }
 
 button {
-  @apply bg-coral text-white px-4 py-2 rounded hover:bg-salmon transition-all;
+  @apply bg-accent text-white px-4 py-2 rounded transition-all;
+  /* Adjust hover background using a slightly darker accent if desired */
+  &:hover {
+    background-color: #00A894; /* You can fine-tune this value */
+  }
 }
 
 input, textarea {
-  @apply text-darkNavy bg-lightNeutral placeholder-grayNeutral border border-gray-300 focus:outline-none focus:ring-2 focus:ring-coral;
+  @apply text-text bg-background placeholder-gray-500 border border-secondary focus:outline-none focus:ring-2 focus:ring-accent;
 }
 
 .container {
