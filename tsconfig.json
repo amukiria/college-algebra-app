@@ -28,7 +28,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/app/lessons/sets/practice/page.js"  ],
   "exclude": [
     "node_modules"
   ]
