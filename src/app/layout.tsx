@@ -2,6 +2,7 @@ import React from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 import TopBar from "../components/TopBar"; // Adjust the path as needed
 import "../styles/globals.css"; // Ensure this path is correct
+import { Analytics } from "@vercel/analytics/react"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
