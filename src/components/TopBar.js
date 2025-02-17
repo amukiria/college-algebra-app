@@ -6,143 +6,50 @@ import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 
 const TopBar = () => {
   return (
-    <header className="bg-lightNeutral text-darkNavy shadow-md fixed top-0 left-0 right-0 z-50">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="bg-background text-text shadow-md fixed top-0 left-0 right-0 z-50">
+      <div className="container px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="text-2xl font-heading">
-          <Link href="/" className="hover:text-coral">
+          <Link href="/" className="hover:text-accent">
             MTH 1109 - College Algebra
           </Link>
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex space-x-6 font-body text-grayNeutral">
-          <Link href="/" className="hover:text-coral">
-            Home
-          </Link>
+        <nav className="flex space-x-6 font-body text-secondary">
+          <Link href="/" className="hover:text-accent">Home</Link>
+          <Link href="/dashboard" className="hover:text-accent">Dashboard</Link>
 
           {/* Lessons with Dropdown */}
           <div className="relative group">
-            <a
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-coral"
-            >
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">
               Lessons
             </a>
             <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
               <ul>
-                <li>
-                  <Link
-                    href="/lessons/sets/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Sets
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/polynomials/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Polynomials
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/factoring/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Factoring Expressions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/rational-expressions/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Rational Expressions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/linear-equations/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Linear Equations
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/quadratic-equation/learn"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Quadratic Equation
-                  </Link>
-                </li>
+                <li><Link href="/lessons/sets/learn" className="block px-4 py-2 hover:bg-gray-100">Sets</Link></li>
+                <li><Link href="/lessons/polynomials/learn" className="block px-4 py-2 hover:bg-gray-100">Polynomials</Link></li>
+                <li><Link href="/lessons/factoring/learn" className="block px-4 py-2 hover:bg-gray-100">Factoring Expressions</Link></li>
+                <li><Link href="/lessons/rational-expressions/learn" className="block px-4 py-2 hover:bg-gray-100">Rational Expressions</Link></li>
+                <li><Link href="/lessons/linear-equations/learn" className="block px-4 py-2 hover:bg-gray-100">Linear Equations</Link></li>
+                <li><Link href="/lessons/quadratic-equation/learn" className="block px-4 py-2 hover:bg-gray-100">Quadratic Equation</Link></li>
               </ul>
             </div>
           </div>
 
           {/* Practice with Dropdown */}
           <div className="relative group">
-            <a
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              className="hover:text-coral"
-            >
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">
               Practice
             </a>
             <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
               <ul>
-                <li>
-                  <Link
-                    href="/lessons/sets/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Sets
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/polynomials/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Polynomials
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/factoring/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Factoring Expressions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/rational-expressions/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Rational Expressions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/linear-equations/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Linear Equations
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/lessons/quadratic-equation/practice"
-                    className="block px-4 py-2 hover:bg-gray-100"
-                  >
-                    Quadratic Equation
-                  </Link>
-                </li>
+                <li><Link href="/lessons/sets/practice" className="block px-4 py-2 hover:bg-gray-100">Sets</Link></li>
+                <li><Link href="/lessons/polynomials/practice" className="block px-4 py-2 hover:bg-gray-100">Polynomials</Link></li>
+                <li><Link href="/lessons/factoring/practice" className="block px-4 py-2 hover:bg-gray-100">Factoring Expressions</Link></li>
+                <li><Link href="/lessons/rational-expressions/practice" className="block px-4 py-2 hover:bg-gray-100">Rational Expressions</Link></li>
+                <li><Link href="/lessons/linear-equations/practice" className="block px-4 py-2 hover:bg-gray-100">Linear Equations</Link></li>
+                <li><Link href="/lessons/quadratic-equation/practice" className="block px-4 py-2 hover:bg-gray-100">Quadratic Equation</Link></li>
               </ul>
             </div>
           </div>
@@ -152,9 +59,7 @@ const TopBar = () => {
         <div className="flex items-center space-x-4">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="bg-coral text-white px-4 py-2 rounded hover:bg-salmon transition-all">
-                Sign In
-              </button>
+              <button className="hover:bg-[#00A894]">Sign In</button>
             </SignInButton>
           </SignedOut>
           <SignedIn>

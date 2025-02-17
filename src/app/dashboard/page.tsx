@@ -1,68 +1,84 @@
 "use client";
-import React from "react";
-import { useUser, RedirectToSignIn, UserButton } from "@clerk/nextjs";
+import React, { useState, useEffect } from "react";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress"; // Make sure the Progress component is imported correctly
+import Link from "next/link";
+import { UserIcon, BookOpenIcon, StarIcon } from "lucide-react";
 
 export default function Dashboard() {
-  const { isSignedIn, user } = useUser();
-  
-  if (!isSignedIn) {
-    return <RedirectToSignIn />;
-  }
-  
-  // Placeholder values – later replace these with real data.
-  const xp = 150;
-  const level = 3;
-  const streak = 5;
-  const badges = ["Beginner", "Algebra Star", "Problem Solver"];
+  const [progress, setProgress] = useState(0); // Initial progress value
+
+  // Simulate progress update (this can come from API, user action, etc.)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prevProgress) => {
+        if (prevProgress < 100) return prevProgress + 1;
+        clearInterval(interval); // Stop when progress reaches 100%
+        return prevProgress;
+      });
+    }, 100); // Update progress every 100ms
+    return () => clearInterval(interval); // Clean up on component unmount
+  }, []);
 
   return (
-    <div className="full-height bg-background p-8">
-      {/* Header */}
-      <header className="flex justify-between items-center mb-12">
-        <h1 className="text-4xl font-heading text-darkNavy">Dashboard</h1>
-        <UserButton />
-      </header>
+    <>
+      <SignedIn>
+        <div className="p-8 bg-background min-h-screen text-text">
+          <h1 className="text-4xl font-bold text-primary font-heading mb-8">
+            Dashboard
+          </h1>
+          
+          {/* User Progress */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold text-primary font-heading mb-4">
+              Your Progress
+            </h2>
+            <Card className="p-6 shadow-lg rounded-lg bg-white">
+              <CardContent>
+                <div className="flex justify-between items-center">
+                  <p className="text-lg font-medium font-body text-text">Overall Completion</p>
+                  <span className="text-lg font-bold text-primary">{progress}%</span>
+                </div>
+                {/* Removed max={100} from Progress */}
+                <Progress value={progress} className="mt-4" />
+              </CardContent>
+            </Card>
+          </div>
 
-      {/* Welcome Section */}
-      <section className="mb-12 bg-lightNeutral p-6 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-heading text-darkNavy mb-2">
-          Welcome, {user.username}!
-        </h2>
-        <p className="text-lg">
-          Your account is secured via Clerk. Track your progress, earn XP, and climb the leaderboards!
-        </p>
-      </section>
-
-      {/* Metrics Cards */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="p-6 bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold text-darkNavy mb-1">XP</h3>
-          <p className="text-3xl text-darkNavy">{xp}</p>
+          {/* Quick Access */}
+          <h2 className="text-2xl font-semibold text-primary font-heading mb-4">
+            Quick Access
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="p-6 shadow-lg rounded-lg flex flex-col items-center bg-white">
+              <BookOpenIcon className="h-10 w-10 text-primary mb-2" />
+              <p className="text-lg font-medium font-body text-text">Lessons</p>
+              <Button className="mt-4 w-full bg-accent text-white hover:bg-[#0056b3]">
+                <Link href="/lessons">View Lessons</Link>
+              </Button>
+            </Card>
+            <Card className="p-6 shadow-lg rounded-lg flex flex-col items-center bg-white">
+              <StarIcon className="h-10 w-10 text-primary mb-2" />
+              <p className="text-lg font-medium font-body text-text">Achievements</p>
+              <Button className="mt-4 w-full bg-accent text-white hover:bg-[#0056b3]">
+                <Link href="/achievements">View Achievements</Link>
+              </Button>
+            </Card>
+            <Card className="p-6 shadow-lg rounded-lg flex flex-col items-center bg-white">
+              <UserIcon className="h-10 w-10 text-primary mb-2" />
+              <p className="text-lg font-medium font-body text-text">Profile</p>
+              <Button className="mt-4 w-full bg-accent text-white hover:bg-[#0056b3]">
+                <Link href="/profile">View Profile</Link>
+              </Button>
+            </Card>
+          </div>
         </div>
-        <div className="p-6 bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold text-darkNavy mb-1">Level</h3>
-          <p className="text-3xl text-darkNavy">{level}</p>
-        </div>
-        <div className="p-6 bg-white rounded-lg shadow hover:shadow-xl transition-shadow">
-          <h3 className="text-xl font-bold text-darkNavy mb-1">Streak</h3>
-          <p className="text-3xl text-darkNavy">{streak} days</p>
-        </div>
-      </section>
-
-      {/* Badges Section */}
-      <section className="bg-lightNeutral p-6 rounded-lg shadow-lg">
-        <h3 className="text-2xl font-heading text-darkNavy mb-4">Badges Earned</h3>
-        <div className="flex flex-wrap gap-4">
-          {badges.map((badge, idx) => (
-            <span 
-              key={idx} 
-              className="bg-coral text-white px-4 py-2 rounded-full shadow hover:bg-salmon transition-colors"
-            >
-              {badge}
-            </span>
-          ))}
-        </div>
-      </section>
-    </div>
+      </SignedIn>
+      <SignedOut>
+        <RedirectToSignIn />
+      </SignedOut>
+    </>
   );
 }

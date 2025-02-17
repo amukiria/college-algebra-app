@@ -113,17 +113,15 @@ export default function SetsPractice() {
   return (
     <>
       <SignedIn>
-        <div className="container mx-auto p-8 bg-background min-h-screen text-text">
-          <h1 className="text-5xl font-bold text-primary text-center mb-12">
-            Practice: Sets Explorer
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            {/* Input Section */}
-            <div className="space-y-6">
+        <div className="container mx-auto px-6 py-8 bg-background text-text flex flex-col justify-between min-h-screen">
+          <div className="flex flex-col items-center">
+            <h1 className="text-5xl font-bold text-primary text-center mb-8">Sets Practice</h1>
+            
+            {/* Main interaction section: Input and operation buttons */}
+            <div className="w-full max-w-xl space-y-6 mb-12">
+              {/* Input Section */}
               <div>
-                <label className="block text-lg font-semibold mb-2">
-                  Enter Set A (comma separated):
-                </label>
+                <label className="block text-lg font-semibold mb-2 text-primary">Enter Set A (comma separated):</label>
                 <input
                   type="text"
                   onChange={(e) => {
@@ -138,10 +136,9 @@ export default function SetsPractice() {
                   placeholder="e.g., 1, 2, 3"
                 />
               </div>
+
               <div>
-                <label className="block text-lg font-semibold mb-2">
-                  Enter Set B (comma separated):
-                </label>
+                <label className="block text-lg font-semibold mb-2 text-primary">Enter Set B (comma separated):</label>
                 <input
                   type="text"
                   onChange={(e) => {
@@ -156,69 +153,70 @@ export default function SetsPractice() {
                   placeholder="e.g., 4, 5, 6"
                 />
               </div>
-            </div>
-            {/* Button Section */}
-            <div className="flex flex-col justify-center">
-              <div className="flex flex-wrap gap-4 mb-6 justify-center">
+
+              {/* Operation buttons */}
+              <div className="flex flex-wrap gap-4 justify-center mt-8">
                 <button
                   onClick={handleIntersection}
-                  className="bg-accent text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   Intersection
                 </button>
                 <button
                   onClick={handleUnion}
-                  className="bg-accent text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   Union
                 </button>
                 <button
                   onClick={handleDifference}
-                  className="bg-accent text-white px-5 py-3 rounded-lg hover:bg-blue-600 transition-colors"
+                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
                 >
                   Difference (A - B)
                 </button>
                 <button
                   onClick={resetVennDiagram}
-                  className="bg-red-600 text-white px-5 py-3 rounded-lg hover:bg-red-500 transition-colors"
+                  className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-500 transition-colors"
                 >
                   Reset
                 </button>
               </div>
-              {result && (
-                <div className="mt-4 p-6 bg-primary rounded-lg shadow-lg text-white text-center">
-                  <p className="text-xl">{result}</p>
-                </div>
-              )}
+            </div>
+
+            {/* Venn Diagram */}
+            <div id="venn" className="flex justify-center w-full max-w-xl mb-12"></div>
+
+            {/* Result Section */}
+            {result && (
+              <div className="p-6 bg-primary rounded-lg shadow-lg text-white text-center w-full max-w-xl mb-12">
+                <p className="text-xl">{result}</p>
+              </div>
+            )}
+
+            {/* Power Set */}
+            <div className="w-full max-w-xl mb-12">
+              <h2 className="text-2xl font-semibold text-primary mb-4">Power Set</h2>
+              <div className="space-y-4">
+                <p className="font-semibold text-primary">Power Set of A: {JSON.stringify(powerSet(setA))}</p>
+                <p className="font-semibold text-primary">Power Set of B: {JSON.stringify(powerSet(setB))}</p>
+              </div>
+            </div>
+
+            {/* Metrics: Cardinality */}
+            <div className="flex justify-between w-full max-w-xl mb-12">
+              <div className="p-6 bg-secondary rounded-lg shadow w-full text-center">
+                <p className="font-semibold text-lg text-primary">Cardinality of A:</p>
+                <p className="text-2xl text-primary">{cardinalityA}</p>
+              </div>
+              <div className="p-6 bg-secondary rounded-lg shadow w-full text-center">
+                <p className="font-semibold text-lg text-primary">Cardinality of B:</p>
+                <p className="text-2xl text-primary">{cardinalityB}</p>
+              </div>
             </div>
           </div>
 
-          {/* Venn Diagram Container */}
-          <div id="venn" className="flex justify-center mb-12"></div>
-
-          {/* Metrics Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <div className="p-6 bg-secondary rounded-lg shadow">
-              <p className="font-semibold text-lg">Cardinality of A:</p>
-              <p className="text-2xl">{cardinalityA}</p>
-            </div>
-            <div className="p-6 bg-secondary rounded-lg shadow">
-              <p className="font-semibold text-lg">Cardinality of B:</p>
-              <p className="text-2xl">{cardinalityB}</p>
-            </div>
-          </div>
-
-          {/* Power Set Section */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-semibold text-primary mb-4">Power Set</h2>
-            <div className="space-y-4">
-              <p className="font-semibold">Power Set of A: {JSON.stringify(powerSet(setA))}</p>
-              <p className="font-semibold">Power Set of B: {JSON.stringify(powerSet(setB))}</p>
-            </div>
-          </div>
-
-          {/* Navigation Button */}
-          <div className="flex justify-center">
+          {/* Navigation Button centered at the bottom */}
+          <div className="w-full flex justify-center mt-auto mb-8">
             <Link href="/lessons/sets/practice-2">
               <button className="bg-accent text-white px-8 py-4 rounded-lg shadow hover:bg-blue-600 transition-colors">
                 Set Explorer 2 - 3 Sets

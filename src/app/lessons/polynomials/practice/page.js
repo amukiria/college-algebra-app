@@ -1,4 +1,4 @@
-"use client"; // Ensure this is a Client Component if using React hooks
+"use client";
 
 import { useState } from 'react';
 import algebra from 'algebra.js'; // Import algebra.js
@@ -159,94 +159,94 @@ export default function PolynomialPuzzle() {
   };
 
   return (
-    <div className="p-6 font-sans bg-gray-100 rounded-lg shadow-lg max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-4 text-blue-600">Polynomial Puzzle Game</h1>
-      <p className="text-center mb-6 text-lg">Enter two polynomials and select an operation to perform.</p>
+    <div className="p-8 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-xl">
+        <h1 className="text-4xl font-semibold text-center text-blue-700 mb-4">Polynomial Puzzle Game</h1>
+        <p className="text-center text-xl text-gray-600 mb-6">Enter two polynomials and select an operation to perform.</p>
 
-      {/* Input fields for polynomials */}
-      <div className="mb-4">
-        <label className="block text-lg mb-2">Polynomial 1:</label>
-        <input
-          type="text"
-          value={poly1}
-          onChange={(e) => setPoly1(e.target.value)}
-          placeholder="e.g., 3x^2 + 2x + 5"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-        />
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-lg mb-2">Polynomial 2:</label>
-        <input
-          type="text"
-          value={poly2}
-          onChange={(e) => setPoly2(e.target.value)}
-          placeholder="e.g., 4x^2 - 3x + 2"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-        />
-      </div>
-
-      {/* Operation selection */}
-      <div className="mb-4">
-        <label className="block text-lg mb-2">Operation:</label>
-        <select
-          value={operation}
-          onChange={(e) => setOperation(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg"
-        >
-          <option value="add">Add</option>
-          <option value="subtract">Subtract</option>
-          <option value="multiply">Multiply</option>
-          <option value="divide">Divide</option>
-        </select>
-      </div>
-
-      {/* Buttons for Calculate and Reset */}
-      <div className="mb-4">
-        <button
-          onClick={() => {
-            if (validateInput()) handleOperation();
-          }}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg mr-3 hover:bg-blue-700"
-        >
-          Calculate
-        </button>
-        <button
-          onClick={resetFields}
-          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
-        >
-          Reset
-        </button>
-      </div>
-
-      {/* Display errors */}
-      {error && (
-        <div className="text-red-600 mb-4">
-          <strong>Error:</strong> {error}
+        {/* Input fields for polynomials */}
+        <div className="mb-6">
+          <label className="block text-lg font-medium mb-2">Polynomial 1:</label>
+          <input
+            type="text"
+            value={poly1}
+            onChange={(e) => setPoly1(e.target.value)}
+            placeholder="e.g., 3x^2 + 2x + 5"
+            className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
         </div>
-      )}
 
-      {/* Display result */}
-      {result && (
-        <div className="mt-6">
-          <h2 className="text-2xl font-semibold mb-2">Result:</h2>
-          <p>{result}</p>
+        <div className="mb-6">
+          <label className="block text-lg font-medium mb-2">Polynomial 2:</label>
+          <input
+            type="text"
+            value={poly2}
+            onChange={(e) => setPoly2(e.target.value)}
+            placeholder="e.g., 4x^2 - 3x + 2"
+            className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
         </div>
-      )}
 
-      {/* Display history of operations */}
-      {history.length > 0 && (
+        {/* Operation selection */}
+        <div className="mb-6">
+          <label className="block text-lg font-medium mb-2">Operation:</label>
+          <select
+            value={operation}
+            onChange={(e) => setOperation(e.target.value)}
+            className="w-full p-4 border border-gray-300 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+            <option value="multiply">Multiply</option>
+            <option value="divide">Divide</option>
+          </select>
+        </div>
+
+        {/* Buttons for Calculate and Reset */}
+        <div className="flex justify-between mb-6">
+          <button
+            onClick={() => {
+              if (validateInput()) handleOperation();
+            }}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            Calculate
+          </button>
+          <button
+            onClick={resetFields}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+            Reset
+          </button>
+        </div>
+
+        {/* Display errors */}
+        {error && (
+          <div className="text-red-600 text-lg font-medium mb-6">
+            <strong>Error:</strong> {error}
+          </div>
+        )}
+
+        {/* Display result */}
+        {result && (
+          <div className="mt-6">
+            <h2 className="text-2xl font-semibold text-gray-700 mb-4">Result:</h2>
+            <p className="text-lg text-gray-800">{result}</p>
+          </div>
+        )}
+
+        {/* History Section */}
         <div className="mt-6">
-          <h2 className="text-2xl font-semibold mb-2">Operation History:</h2>
-          <ul>
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">Operation History:</h2>
+          <ul className="list-disc list-inside">
             {history.map((entry, index) => (
-              <li key={index} className="mb-2">
-                <strong>Operation {index + 1}:</strong> {entry.poly1} {entry.operation} {entry.poly2} = {entry.result}
+              <li key={index} className="text-lg text-gray-800">
+                {entry.poly1} {entry.operation} {entry.poly2} = {entry.result}
               </li>
             ))}
           </ul>
         </div>
-      )}
+      </div>
     </div>
   );
 }

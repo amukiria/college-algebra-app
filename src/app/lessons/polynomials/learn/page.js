@@ -43,9 +43,9 @@ export default function PolynomialsLesson() {
   return (
     <>
       <SignedIn>
-        <div className="p-8 bg-secondary min-h-screen text-text">
+        <div className="p-8 min-h-screen bg-lightGray text-gray-900">
           {/* Lesson Title */}
-          <h1 className="text-4xl font-bold text-accent mb-6">Comprehensive Lesson: Polynomials</h1>
+          <h1 className="text-4xl font-bold text-black mb-6">Comprehensive Lesson: Polynomials</h1>
 
           {/* What is a Polynomial? */}
           <div className="mb-8">
