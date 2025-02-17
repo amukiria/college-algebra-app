@@ -16,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <TopBar />
           {/* Add top padding equal to the height of your fixed header */}
           <div className="pt-20 container">
-            <main>{children}</main>
+            <main>{children}
+            <Analytics />
+            </main>
           </div>
         </body>
       </html>
