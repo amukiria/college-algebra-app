@@ -56,7 +56,7 @@ export default function Dashboard() {
               <BookOpenIcon className="h-10 w-10 text-primary mb-2" />
               <p className="text-lg font-medium font-body text-text">Lessons</p>
               <Button className="mt-4 w-full bg-accent text-white hover:bg-[#0056b3]">
-                <Link href="/lessons">View Lessons</Link>
+                <Link href="/">View Lessons</Link>
               </Button>
             </Card>
             <Card className="p-6 shadow-lg rounded-lg flex flex-col items-center bg-white">
