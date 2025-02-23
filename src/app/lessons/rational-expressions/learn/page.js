@@ -1,17 +1,35 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Context as MathJaxContext, Node as MathJaxNode } from 'react-mathjax2'; // Correct imports
+import dynamic from 'next/dynamic';
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
 
 export default function RationalExpressionsLesson() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Dynamically import MathJax components inside the component
+  const MathJaxContext = dynamic(() => import('react-mathjax2').then(mod => mod.Context), {
+    ssr: false,
+  });
+  const MathJaxNode = dynamic(() => import('react-mathjax2').then(mod => mod.Node), {
+    ssr: false,
+  });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const config = {
     tex2jax: {
       inlineMath: [['$', '$'], ['\\(', '\\)']],
       displayMath: [['$$', '$$'], ['\\[', '\\]']],
     },
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>

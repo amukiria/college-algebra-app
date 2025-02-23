@@ -1,20 +1,24 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Context as MathJaxContext, Node as MathJaxNode } from 'react-mathjax2'; // Correct imports
-import { evaluate } from 'mathjs'; // Specific import for solving
+import dynamic from 'next/dynamic';
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
 
 export default function LinearEquationsLesson() {
-  const solveEquation = (equation) => {
-    try {
-      // Simplified solver for display purposes (mathjs evaluate isn’t ideal here)
-      return '-3/2'; // Hardcoded for this example; enhance later if needed
-    } catch (error) {
-      return 'Unable to solve';
-    }
-  };
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Dynamically import MathJax components inside the component
+  const MathJaxContext = dynamic(() => import('react-mathjax2').then(mod => mod.Context), {
+    ssr: false,
+  });
+  const MathJaxNode = dynamic(() => import('react-mathjax2').then(mod => mod.Node), {
+    ssr: false,
+  });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const config = {
     tex2jax: {
@@ -22,6 +26,10 @@ export default function LinearEquationsLesson() {
       displayMath: [['$$', '$$'], ['\\[', '\\]']],
     },
   };
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
