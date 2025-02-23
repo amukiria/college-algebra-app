@@ -32,7 +32,7 @@ const TopBar = () => {
                 <li><Link href="/lessons/factoring/learn" className="block px-4 py-2 hover:bg-gray-100">Factoring Expressions</Link></li>
                 <li><Link href="/lessons/rational-expressions/learn" className="block px-4 py-2 hover:bg-gray-100">Rational Expressions</Link></li>
                 <li><Link href="/lessons/linear-equations/learn" className="block px-4 py-2 hover:bg-gray-100">Linear Equations</Link></li>
-                <li><Link href="/lessons/quadratic-equation/learn" className="block px-4 py-2 hover:bg-gray-100">Quadratic Equation</Link></li>
+                <li><Link href="/lessons/quadratic-equations/learn" className="block px-4 py-2 hover:bg-gray-100">Quadratic Equations</Link></li>
               </ul>
             </div>
           </div>

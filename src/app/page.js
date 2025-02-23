@@ -47,7 +47,7 @@ export default function Dashboard() {
     },
     { 
       title: "Quadratic Equations", 
-      path: "/lessons/quadratics", 
+      path: "/lessons/quadratic-equations", 
       description: "Solve quadratic equations using multiple methods.",
       links: [
         { title: "Learn", path: "/lessons/quadratics/learn" },
