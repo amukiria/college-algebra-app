@@ -50,8 +50,8 @@ export default function Dashboard() {
       path: "/lessons/quadratic-equations", 
       description: "Solve quadratic equations using multiple methods.",
       links: [
-        { title: "Learn", path: "/lessons/quadratics/learn" },
-        { title: "Practice Exercises", path: "/lessons/quadratics/practice" }
+        { title: "Learn", path: "/lessons/quadratic-equations/learn" },
+        { title: "Practice Exercises", path: "/lessons/quadratic-equations/practice" }
       ]
     },
   ];
