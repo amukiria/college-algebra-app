@@ -246,8 +246,8 @@ export default function QuizPage() {
             <Confetti
               width={window.innerWidth}
               height={window.innerHeight}
-              recycle={true}
-              numberOfPieces={200 + streak * 50}
+              numberOfPieces={400} // Fixed number for debug
+              recycle={false} // Single burst, no loop
             />
           )}
           <h1 className="text-4xl md:text-5xl font-extrabold text-primary mb-8 text-center">
