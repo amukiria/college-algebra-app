@@ -8,23 +8,17 @@ const TopBar = () => {
   return (
     <header className="bg-background text-text shadow-md fixed top-0 left-0 right-0 z-50">
       <div className="container px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
         <div className="text-2xl font-heading">
           <Link href="/" className="hover:text-accent">
             MTH 1109 - College Algebra
           </Link>
         </div>
 
-        {/* Navigation Links */}
         <nav className="flex space-x-6 font-body text-secondary">
           <Link href="/" className="hover:text-accent">Home</Link>
           <Link href="/dashboard" className="hover:text-accent">Dashboard</Link>
-
-          {/* Lessons with Dropdown */}
           <div className="relative group">
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">
-              Lessons
-            </a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">Lessons</a>
             <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
               <ul>
                 <li><Link href="/lessons/sets/learn" className="block px-4 py-2 hover:bg-gray-100">Sets</Link></li>
@@ -36,12 +30,8 @@ const TopBar = () => {
               </ul>
             </div>
           </div>
-
-          {/* Practice with Dropdown */}
           <div className="relative group">
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">
-              Practice
-            </a>
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">Practice</a>
             <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
               <ul>
                 <li><Link href="/lessons/sets/practice" className="block px-4 py-2 hover:bg-gray-100">Sets</Link></li>
@@ -53,9 +43,9 @@ const TopBar = () => {
               </ul>
             </div>
           </div>
+          <Link href="/lessons/quiz" className="hover:text-accent">Quiz</Link>
         </nav>
 
-        {/* User Actions */}
         <div className="flex items-center space-x-4">
           <SignedOut>
             <SignInButton mode="modal">

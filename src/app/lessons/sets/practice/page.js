@@ -1,30 +1,130 @@
 "use client";
-import React, { useState, useEffect } from "react";
+
+import React, { useState, useEffect, useRef } from "react";
 import * as d3 from "d3";
 import * as venn from "venn.js";
-import Link from "next/link";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
 export default function SetsPractice() {
-  const [setA, setSetA] = useState([]);
-  const [setB, setSetB] = useState([]);
-  const [result, setResult] = useState("");
+  const [level, setLevel] = useState(1);
+  const [treasures, setTreasures] = useState(0);
+  const [currentChallenge, setCurrentChallenge] = useState(0);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [timeLeft, setTimeLeft] = useState(30);
   const [vennData, setVennData] = useState([
     { sets: ["A"], size: 0 },
     { sets: ["B"], size: 0 },
     { sets: ["A", "B"], size: 0 },
   ]);
-  const [operation, setOperation] = useState("");
-  const [cardinalityA, setCardinalityA] = useState(0);
-  const [cardinalityB, setCardinalityB] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
+  const vennRef = useRef(null);
+
+  const twoSetChallenges = [
+    {
+      setA: [1, 2, 3],
+      setB: [3, 4, 5],
+      operation: "Intersection",
+      question: "Find A ∩ B",
+      solution: "3",
+    },
+    {
+      setA: [2, 4, 6],
+      setB: [1, 3, 5],
+      operation: "Union",
+      question: "Find A ∪ B",
+      solution: "1,2,3,4,5,6",
+    },
+    {
+      setA: [1, 2, 3],
+      setB: [2, 3, 4],
+      operation: "Difference",
+      question: "Find A - B",
+      solution: "1",
+    },
+    {
+      setA: [4, 5, 6],
+      setB: [5, 6, 7],
+      operation: "Intersection",
+      question: "Find A ∩ B",
+      solution: "5,6",
+    },
+    {
+      setA: [1, 2],
+      setB: [3, 4],
+      operation: "Union",
+      question: "Find A ∪ B",
+      solution: "1,2,3,4",
+    },
+  ];
+
+  const threeSetChallenges = [
+    {
+      setA: [1, 2, 3, 4],
+      setB: [2, 3, 5],
+      setC: [3, 6],
+      operation: "Intersection",
+      question: "Find A ∩ B ∩ C",
+      solution: "3",
+    },
+    {
+      setA: [1, 2],
+      setB: [2, 3],
+      setC: [3, 4],
+      operation: "Union",
+      question: "Find A ∪ B ∪ C",
+      solution: "1,2,3,4",
+    },
+    {
+      setA: [5, 6, 7],
+      setB: [6, 8],
+      setC: [7, 9],
+      operation: "Difference",
+      question: "Find A - (B ∪ C)",
+      solution: "5",
+    },
+    {
+      setA: [2, 4, 6],
+      setB: [4, 6, 8],
+      setC: [6, 8, 10],
+      operation: "Intersection",
+      question: "Find A ∩ B ∩ C",
+      solution: "6",
+    },
+    {
+      setA: [1, 3, 5],
+      setB: [2, 4, 5],
+      setC: [3, 5, 6],
+      operation: "Union",
+      question: "Find A ∪ B ∪ C",
+      solution: "1,2,3,4,5,6",
+    },
+  ];
+
+  const challenges = level === 1 ? twoSetChallenges : threeSetChallenges;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    updateVennDiagram(vennData);
+
+    if (timeLeft > 0 && treasures < 5) {
+      const timer = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0) {
+      setFeedback("Time’s up! The treasure slips away.");
+    }
+  }, [timeLeft, treasures, isMounted]);
 
   const updateVennDiagram = (newData) => {
-    const vennElement = d3.select("#venn");
-    if (!vennElement.node()) {
-      console.warn("Venn diagram container not found.");
-      return;
-    }
-    vennElement.selectAll("*").remove(); // Clear previous diagram
+    if (!vennRef.current) return;
+
+    const vennElement = d3.select(vennRef.current);
+    vennElement.selectAll("*").remove();
     const chart = venn.VennDiagram().width(400).height(400);
     vennElement
       .datum(newData)
@@ -34,195 +134,218 @@ export default function SetsPractice() {
       .style("opacity", 1);
   };
 
-  const handleIntersection = () => {
-    const intersection = [...new Set(setA)].filter((x) => setB.includes(x));
-    setResult(`Intersection: {${intersection.join(", ")}}`);
-    setOperation("Intersection");
-    const data = [
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["A", "B"], size: intersection.length },
-    ];
-    setVennData(data);
-    updateVennDiagram(data);
-  };
+  const checkAnswer = () => {
+    const current = challenges[currentChallenge];
+    const expected = current.solution;
+    // Normalize user input: remove spaces, sort if multiple elements
+    const userTrimmed = userAnswer
+      .trim()
+      .split(",")
+      .map((x) => x.trim())
+      .filter((x) => x !== "")
+      .sort((a, b) => a - b)
+      .join(",");
+    const expectedTrimmed = expected
+      .split(",")
+      .map((x) => x.trim())
+      .sort((a, b) => a - b)
+      .join(",");
 
-  const handleUnion = () => {
-    const union = [...new Set([...setA, ...setB])];
-    setResult(`Union: {${union.join(", ")}}`);
-    setOperation("Union");
-    const data = [
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["A", "B"], size: union.length },
-    ];
-    setVennData(data);
-    updateVennDiagram(data);
-  };
+    if (userTrimmed === expectedTrimmed) {
+      setTreasures(treasures + 1);
+      setFeedback(level === 1 ? "Treasure found! Onward!" : "Gem secured! Keep hunting!");
 
-  const handleDifference = () => {
-    const difference = [...new Set(setA)].filter((x) => !setB.includes(x));
-    setResult(`Difference (A - B): {${difference.join(", ")}}`);
-    setOperation("Difference");
-    const data = [
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["A", "B"], size: difference.length },
-    ];
-    setVennData(data);
-    updateVennDiagram(data);
-  };
-
-  const resetVennDiagram = () => {
-    setSetA([]);
-    setSetB([]);
-    setResult("");
-    setOperation("");
-    setCardinalityA(0);
-    setCardinalityB(0);
-    const resetData = [
-      { sets: ["A"], size: 0 },
-      { sets: ["B"], size: 0 },
-      { sets: ["A", "B"], size: 0 },
-    ];
-    setVennData(resetData);
-    updateVennDiagram(resetData);
-  };
-
-  useEffect(() => {
-    const initialData = [
-      { sets: ["A"], size: setA.length },
-      { sets: ["B"], size: setB.length },
-      { sets: ["A", "B"], size: [...new Set(setA)].filter((x) => setB.includes(x)).length },
-    ];
-    setVennData(initialData);
-    updateVennDiagram(initialData);
-  }, [setA, setB]);
-
-  function powerSet(set) {
-    const result = [[]];
-    for (const value of set) {
-      const currentLength = result.length;
-      for (let i = 0; i < currentLength; i++) {
-        result.push([...result[i], value]);
+      let newData;
+      if (level === 1) {
+        switch (current.operation) {
+          case "Intersection":
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["A", "B"], size: current.setA.filter((x) => current.setB.includes(x)).length },
+            ];
+            break;
+          case "Union":
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["A", "B"], size: [...new Set([...current.setA, ...current.setB])].length },
+            ];
+            break;
+          case "Difference":
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["A", "B"], size: current.setA.filter((x) => !current.setB.includes(x)).length },
+            ];
+            break;
+          default:
+            newData = vennData;
+        }
+      } else {
+        const intersectionAB = current.setA.filter((x) => current.setB.includes(x));
+        const intersectionAC = current.setA.filter((x) => current.setC.includes(x));
+        const intersectionBC = current.setB.filter((x) => current.setC.includes(x));
+        const intersectionABC = current.setA.filter(
+          (x) => current.setB.includes(x) && current.setC.includes(x)
+        );
+        switch (current.operation) {
+          case "Intersection":
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["C"], size: current.setC.length },
+              { sets: ["A", "B"], size: intersectionAB.length },
+              { sets: ["A", "C"], size: intersectionAC.length },
+              { sets: ["B", "C"], size: intersectionBC.length },
+              { sets: ["A", "B", "C"], size: intersectionABC.length },
+            ];
+            break;
+          case "Union":
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["C"], size: current.setC.length },
+              { sets: ["A", "B"], size: [...new Set([...current.setA, ...current.setB])].length },
+              { sets: ["A", "C"], size: [...new Set([...current.setA, ...current.setC])].length },
+              { sets: ["B", "C"], size: [...new Set([...current.setB, ...current.setC])].length },
+              { sets: ["A", "B", "C"], size: [...new Set([...current.setA, ...current.setB, ...current.setC])].length },
+            ];
+            break;
+          case "Difference":
+            const unionBC = [...new Set([...current.setB, ...current.setC])];
+            newData = [
+              { sets: ["A"], size: current.setA.length },
+              { sets: ["B"], size: current.setB.length },
+              { sets: ["C"], size: current.setC.length },
+              { sets: ["A", "B"], size: intersectionAB.length },
+              { sets: ["A", "C"], size: intersectionAC.length },
+              { sets: ["B", "C"], size: intersectionBC.length },
+              { sets: ["A", "B", "C"], size: current.setA.filter((x) => !unionBC.includes(x)).length },
+            ];
+            break;
+          default:
+            newData = vennData;
+        }
       }
+      setVennData(newData);
+      updateVennDiagram(newData);
+
+      if (treasures + 1 < 5) {
+        setCurrentChallenge(currentChallenge + 1);
+        setUserAnswer("");
+        setTimeLeft(30);
+      } else if (level === 1) {
+        setLevel(2);
+        setTreasures(0);
+        setCurrentChallenge(0);
+        setUserAnswer("");
+        setFeedback("Level 1 Complete! Welcome to Level 2: Set Treasure Triad!");
+        setTimeLeft(30);
+        setVennData([
+          { sets: ["A"], size: 0 },
+          { sets: ["B"], size: 0 },
+          { sets: ["C"], size: 0 },
+          { sets: ["A", "B"], size: 0 },
+          { sets: ["A", "C"], size: 0 },
+          { sets: ["B", "C"], size: 0 },
+          { sets: ["A", "B", "C"], size: 0 },
+        ]);
+        updateVennDiagram([
+          { sets: ["A"], size: 0 },
+          { sets: ["B"], size: 0 },
+          { sets: ["C"], size: 0 },
+          { sets: ["A", "B"], size: 0 },
+          { sets: ["A", "C"], size: 0 },
+          { sets: ["B", "C"], size: 0 },
+          { sets: ["A", "B", "C"], size: 0 },
+        ]);
+      }
+    } else {
+      setFeedback(
+        level === 1
+          ? `Wrong path! Expected: ${expected}`
+          : `Wrong! Expected: ${expected}`
+      );
     }
-    return result;
-  }
+  };
 
   return (
     <>
       <SignedIn>
-        <div className="container mx-auto px-6 py-8 bg-background text-text flex flex-col justify-between min-h-screen">
-          <div className="flex flex-col items-center">
-            <h1 className="text-5xl font-bold text-primary text-center mb-8">Sets Practice</h1>
-            
-            {/* Main interaction section: Input and operation buttons */}
-            <div className="w-full max-w-xl space-y-6 mb-12">
-              {/* Input Section */}
-              <div>
-                <label className="block text-lg font-semibold mb-2 text-primary">Enter Set A (comma separated):</label>
-                <input
-                  type="text"
-                  onChange={(e) => {
-                    const newSetA = e.target.value
-                      .split(",")
-                      .map((item) => parseInt(item.trim()))
-                      .filter((item) => !isNaN(item));
-                    setSetA(newSetA);
-                    setCardinalityA(newSetA.length);
-                  }}
-                  className="w-full p-3 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="e.g., 1, 2, 3"
-                />
-              </div>
+        <div className="p-8 bg-background min-h-screen text-text font-body">
+          <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6 text-primary text-center">
+            Sets Practice: {level === 1 ? "Set Explorer Mission" : "Set Treasure Triad"}
+          </h1>
+          <p className="text-lg mb-4 text-center">
+            Level {level}: Solve 5 challenges to collect {level === 1 ? "treasures" : "gems"}! {level === 1 ? "Treasures" : "Gems"}: {treasures}/5 | Time Left: {timeLeft}s
+          </p>
 
-              <div>
-                <label className="block text-lg font-semibold mb-2 text-primary">Enter Set B (comma separated):</label>
-                <input
-                  type="text"
-                  onChange={(e) => {
-                    const newSetB = e.target.value
-                      .split(",")
-                      .map((item) => parseInt(item.trim()))
-                      .filter((item) => !isNaN(item));
-                    setSetB(newSetB);
-                    setCardinalityB(newSetB.length);
-                  }}
-                  className="w-full p-3 border border-secondary rounded focus:outline-none focus:ring-2 focus:ring-accent"
-                  placeholder="e.g., 4, 5, 6"
-                />
-              </div>
-
-              {/* Operation buttons */}
-              <div className="flex flex-wrap gap-4 justify-center mt-8">
-                <button
-                  onClick={handleIntersection}
-                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Intersection
-                </button>
-                <button
-                  onClick={handleUnion}
-                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Union
-                </button>
-                <button
-                  onClick={handleDifference}
-                  className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Difference (A - B)
-                </button>
-                <button
-                  onClick={resetVennDiagram}
-                  className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-500 transition-colors"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Venn Diagram */}
-            <div id="venn" className="flex justify-center w-full max-w-xl mb-12"></div>
-
-            {/* Result Section */}
-            {result && (
-              <div className="p-6 bg-primary rounded-lg shadow-lg text-white text-center w-full max-w-xl mb-12">
-                <p className="text-xl">{result}</p>
-              </div>
-            )}
-
-            {/* Power Set */}
-            <div className="w-full max-w-xl mb-12">
-              <h2 className="text-2xl font-semibold text-primary mb-4">Power Set</h2>
-              <div className="space-y-4">
-                <p className="font-semibold text-primary">Power Set of A: {JSON.stringify(powerSet(setA))}</p>
-                <p className="font-semibold text-primary">Power Set of B: {JSON.stringify(powerSet(setB))}</p>
-              </div>
-            </div>
-
-            {/* Metrics: Cardinality */}
-            <div className="flex justify-between w-full max-w-xl mb-12">
-              <div className="p-6 bg-secondary rounded-lg shadow w-full text-center">
-                <p className="font-semibold text-lg text-primary">Cardinality of A:</p>
-                <p className="text-2xl text-primary">{cardinalityA}</p>
-              </div>
-              <div className="p-6 bg-secondary rounded-lg shadow w-full text-center">
-                <p className="font-semibold text-lg text-primary">Cardinality of B:</p>
-                <p className="text-2xl text-primary">{cardinalityB}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Button centered at the bottom */}
-          <div className="w-full flex justify-center mt-auto mb-8">
-            <Link href="/lessons/sets/practice-2">
-              <button className="bg-accent text-white px-8 py-4 rounded-lg shadow hover:bg-blue-600 transition-colors">
-                Set Explorer 2 - 3 Sets
+          {treasures < 5 && timeLeft > 0 ? (
+            <div className="max-w-md mx-auto bg-lightNeutral p-6 rounded-lg shadow-md">
+              <p className="text-lg mb-2">
+                Set A: {"{" + challenges[currentChallenge].setA.join(", ") + "}"}
+              </p>
+              <p className="text-lg mb-2">
+                Set B: {"{" + challenges[currentChallenge].setB.join(", ") + "}"}
+              </p>
+              {level === 2 && (
+                <p className="text-lg mb-4">
+                  Set C: {"{" + challenges[currentChallenge].setC.join(", ") + "}"}
+                </p>
+              )}
+              <p className="text-lg mb-4 font-semibold text-primary">
+                {challenges[currentChallenge].question}
+              </p>
+              <input
+                type="text"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                placeholder="Enter result (e.g., 3 or 1,2,3)"
+                className="w-full p-2 mb-4 border rounded"
+              />
+              <button
+                onClick={checkAnswer}
+                className="w-full bg-accent text-white px-4 py-2 rounded hover:bg-salmon transition duration-300"
+              >
+                {level === 1 ? "Claim Treasure" : "Unlock Gem"}
               </button>
-            </Link>
-          </div>
+              {feedback && <p className="mt-4 text-center">{feedback}</p>}
+            </div>
+          ) : (
+            <div className="text-center">
+              <p className="text-2xl text-primary font-semibold">
+                {treasures === 5 && level === 2 ? "Mission Complete! You’re a Set Master!" : "Level Failed! Time ran out."}
+              </p>
+              <button
+                onClick={() => {
+                  setLevel(1);
+                  setTreasures(0);
+                  setCurrentChallenge(0);
+                  setUserAnswer("");
+                  setFeedback("");
+                  setTimeLeft(30);
+                  setVennData([
+                    { sets: ["A"], size: 0 },
+                    { sets: ["B"], size: 0 },
+                    { sets: ["A", "B"], size: 0 },
+                  ]);
+                  updateVennDiagram([
+                    { sets: ["A"], size: 0 },
+                    { sets: ["B"], size: 0 },
+                    { sets: ["A", "B"], size: 0 },
+                  ]);
+                }}
+                className="mt-4 bg-accent text-white px-6 py-3 rounded-lg hover:bg-salmon transition duration-300"
+              >
+                Restart from Level 1
+              </button>
+            </div>
+          )}
+
+          {isMounted && (
+            <div ref={vennRef} id="venn" className="flex justify-center w-full max-w-md mt-8"></div>
+          )}
         </div>
       </SignedIn>
       <SignedOut>
