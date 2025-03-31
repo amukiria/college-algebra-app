@@ -31,6 +31,7 @@
     "next": "^15.2.4",
     "next-auth": "^4.24.11",
     "playfab-sdk": "^2.168.250214",
+    "plotly.js": "^3.0.1",
     "polynomial": "^1.5.3",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
@@ -40,6 +41,7 @@
     "react-katex": "^3.0.1",
     "react-latex": "^2.0.0",
     "react-mathjax2": "^0.0.2",
+    "react-plotly.js": "^2.6.0",
     "tailwind-merge": "^3.0.1",
     "venn.js": "^0.2.20"
   },
