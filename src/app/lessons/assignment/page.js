@@ -1,23 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
-import { SignedIn, SignedOut, RedirectToSignIn, auth } from "@clerk/nextjs";
-import Plot from "react-plotly.js";
-import { db } from "@/lib/db";
-import { userActivity } from "@/lib/db/schema";
+import React, { useState, useRef } from "react";
+import { SignedIn, SignedOut, RedirectToSignIn, useUser } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-export default function GraphingAssignmentPage() {
+// Dynamically import Plot with SSR disabled
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
+export default function AssignmentPage() {
   const [plots, setPlots] = useState({
-    f1: { points: [], equation: "x" }, // f(x) = x
-    f2: { points: [], equation: "1/(x-2)" }, // f(x) = 1/(x-2)
-    f3: { points: [], equation: "Math.sqrt(x)" }, // f(x) = √x
+    f1: { points: [], equation: "Math.pow(3, -x)" }, // f(x) = 3^(-x)
+    f2: { points: [], equation: "(x + 1) / (x - 2)" }, // f(x) = (x + 1)/(x - 2)
+    f3: { points: [], equation: "Math.log2(x - 1)" }, // f(x) = log2(x - 1)
   });
   const [answers, setAnswers] = useState({ q1: "", q2: "", q3: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
+  const pageRef = useRef(null);
+  const { user } = useUser(); // Clerk hook to get user info
 
   const handlePlotClick = (data, funcKey) => {
-    if (submitted) return;
     const { x, y } = data.points[0];
     setPlots((prev) => ({
       ...prev,
@@ -26,213 +28,238 @@ export default function GraphingAssignmentPage() {
   };
 
   const handleEquationChange = (funcKey, value) => {
-    if (submitted) return;
     setPlots((prev) => ({
       ...prev,
-      [funcKey]: { ...prev[funcKey], equation: value, points: [] }, // Reset points if equation changes
+      [funcKey]: { ...prev[funcKey], equation: value, points: [] },
     }));
   };
 
-  const generateGraphData = (equation) => {
-    const xValues = Array.from({ length: 21 }, (_, i) => i - 10); // -10 to 10
-    return xValues.map((x) => {
-      try {
-        if (equation === "1/(x-2)" && Math.abs(x - 2) < 0.01) return { x, y: null }; // Asymptote
-        const y = eval(equation); // Evaluate equation (unsafe in prod, see notes)
-        return { x, y: Number.isFinite(y) ? y : null };
-      } catch {
-        return { x, y: null };
-      }
-    });
-  };
-
   const handleAnswerChange = (question, value) => {
-    if (!submitted) setAnswers((prev) => ({ ...prev, [question]: value }));
+    setAnswers((prev) => ({ ...prev, [question]: value }));
   };
 
-  const handleSubmit = async () => {
-    let correctCount = 0;
-    if (answers.q1 === "increases") correctCount += 3;
-    if (answers.q2 === "vertical asymptote") correctCount += 4;
-    if (answers.q3 === "x ≥ 0") correctCount += 3;
-
-    const { userId } = auth();
-    if (userId) {
-      await db.insert(userActivity).values({
-        userId,
-        action: "graphing_attempt",
-        timestamp: Date.now() / 1000,
-        details: JSON.stringify({
-          score: correctCount,
-          total: 10,
-          completed: correctCount === 10,
-          answers,
-          plots,
-        }),
-      });
-    }
-
-    setScore(correctCount);
-    setSubmitted(true);
+  const generateGraphData = (equation) => {
+    const xValues = Array.from({ length: 201 }, (_, i) => (i - 100) / 20); // -5 to 5 with more points for smoothness
+    return {
+      x: xValues,
+      y: xValues.map((x) => {
+        try {
+          if (equation === "(x + 1) / (x - 2)" && Math.abs(x - 2) < 0.01) return null; // Asymptote at x = 2
+          if (equation === "Math.log2(x - 1)" && x - 1 <= 0) return null; // Domain x > 1
+          return eval(equation);
+        } catch {
+          return null;
+        }
+      }),
+      type: "scatter",
+      mode: "lines",
+      name: "f(x)",
+      line: { color: "#1f77b4", width: 3 }, // Bright blue, thicker line
+    };
   };
 
-  const resetAssignment = () => {
-    setPlots({
-      f1: { points: [], equation: "x" },
-      f2: { points: [], equation: "1/(x-2)" },
-      f3: { points: [], equation: "Math.sqrt(x)" },
+  const handleSubmit = () => {
+    const input = pageRef.current;
+    html2canvas(input, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const width = pdf.internal.pageSize.getWidth();
+      const height = (canvas.height * width) / canvas.width;
+
+      // Add student name and timestamp at the top
+      const studentName = user?.fullName || "Unknown Student";
+      const timestamp = new Date().toLocaleString();
+      pdf.setFontSize(12);
+      pdf.text(`Student: ${studentName}`, 10, 10);
+      pdf.text(`Submitted: ${timestamp}`, 10, 20);
+
+      // Add the captured page content
+      pdf.addImage(imgData, "PNG", 0, 30, width, height - 30);
+      pdf.save("graphing-assignment.pdf");
     });
-    setAnswers({ q1: "", q2: "", q3: "" });
-    setSubmitted(false);
-    setScore(0);
   };
 
   return (
     <>
       <SignedIn>
-        <div className="p-8 bg-background min-h-screen text-text font-body">
+        <div ref={pageRef} className="p-8 bg-background min-h-screen text-text font-body">
           <h1 className="text-4xl font-extrabold text-primary mb-8 text-center">
             Graphing Assignment (Due: 2/4/2025)
           </h1>
 
-          {/* Function 1: f(x) = x */}
           <div className="mb-12">
-            <p className="text-lg font-semibold mb-2">1. Graph f(x) = x (3 Marks)</p>
-            <input
-              type="text"
+            <p className="text-lg font-semibold mb-2">1. Graph f(x) = 3^(-x) (3 Marks)</p>
+            <select
               value={plots.f1.equation}
               onChange={(e) => handleEquationChange("f1", e.target.value)}
-              disabled={submitted}
               className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
-              placeholder="Enter equation (e.g., x)"
-            />
+            >
+              <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
+              <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
+              <option value="Math.log2(x - 1)">f(x) = log2(x - 1)</option>
+            </select>
             <Plot
               data={[
-                { x: plots.f1.points.map(p => p.x), y: plots.f1.points.map(p => p.y), type: "scatter", mode: "markers", name: "Your Points" },
-                { ...generateGraphData(plots.f1.equation), type: "scatter", mode: "lines", name: "f(x) = x" },
+                { x: plots.f1.points.map((p) => p.x), y: plots.f1.points.map((p) => p.y), type: "scatter", mode: "markers", name: "Your Points", marker: { color: "#ff7f0e", size: 10 } },
+                generateGraphData(plots.f1.equation),
               ]}
-              layout={{ width: 500, height: 400, title: "f(x) = x", xaxis: { range: [-5, 5] }, yaxis: { range: [-5, 5] } }}
+              layout={{
+                width: 600,
+                height: 450,
+                title: { text: "f(x) = 3^(-x)", font: { size: 20 } },
+                xaxis: { range: [-5, 5], title: { text: "x", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                yaxis: { range: [0, 10], title: { text: "f(x)", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                plot_bgcolor: "#f8f9fa",
+                paper_bgcolor: "#f8f9fa",
+                showlegend: true,
+                legend: { x: 1, y: 1 },
+              }}
               onClick={(data) => handlePlotClick(data, "f1")}
               className="mx-auto"
             />
-            <p className="mt-4">Does the graph increase or decrease as x increases?</p>
-            <select
-              value={answers.q1}
-              onChange={(e) => handleAnswerChange("q1", e.target.value)}
-              disabled={submitted}
-              className="mt-2 p-2 border rounded bg-white text-black"
-            >
-              <option value="">Select</option>
-              <option value="increases">Increases</option>
-              <option value="decreases">Decreases</option>
-            </select>
-            {submitted && (
-              <p className="text-sm mt-2">
-                {answers.q1 === "increases" ? "Correct! (3/3)" : "Incorrect. It increases as x increases. (0/3)"}
-              </p>
-            )}
-          </div>
-
-          {/* Function 2: f(x) = 1/(x-2) */}
-          <div className="mb-12">
-            <p className="text-lg font-semibold mb-2">2. Graph f(x) = 1/(x-2) (4 Marks)</p>
+            <p className="mt-4">Question: Does the graph increase or decrease as x increases?</p>
             <input
               type="text"
+              value={answers.q1}
+              onChange={(e) => handleAnswerChange("q1", e.target.value)}
+              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              placeholder="Type your answer here"
+            />
+          </div>
+
+          <div className="mb-12">
+            <p className="text-lg font-semibold mb-2">2. Graph f(x) = (x + 1)/(x - 2) (4 Marks)</p>
+            <select
               value={plots.f2.equation}
               onChange={(e) => handleEquationChange("f2", e.target.value)}
-              disabled={submitted}
               className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
-              placeholder="Enter equation (e.g., 1/(x-2))"
-            />
+            >
+              <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
+              <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
+              <option value="Math.log2(x - 1)">f(x) = log2(x - 1)</option>
+            </select>
             <Plot
               data={[
-                { x: plots.f2.points.map(p => p.x), y: plots.f2.points.map(p => p.y), type: "scatter", mode: "markers", name: "Your Points" },
-                { ...generateGraphData(plots.f2.equation), type: "scatter", mode: "lines", name: "f(x) = 1/(x-2)" },
+                { x: plots.f2.points.map((p) => p.x), y: plots.f2.points.map((p) => p.y), type: "scatter", mode: "markers", name: "Your Points", marker: { color: "#ff7f0e", size: 10 } },
+                generateGraphData(plots.f2.equation),
               ]}
-              layout={{ width: 500, height: 400, title: "f(x) = 1/(x-2)", xaxis: { range: [-5, 7] }, yaxis: { range: [-10, 10] } }}
+              layout={{
+                width: 600,
+                height: 450,
+                title: { text: "f(x) = (x + 1)/(x - 2)", font: { size: 20 } },
+                xaxis: { range: [-5, 7], title: { text: "x", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                yaxis: { range: [-10, 10], title: { text: "f(x)", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                plot_bgcolor: "#f8f9fa",
+                paper_bgcolor: "#f8f9fa",
+                showlegend: true,
+                legend: { x: 1, y: 1 },
+                shapes: [
+                  {
+                    type: "line",
+                    x0: 2,
+                    x1: 2,
+                    y0: -10,
+                    y1: 10,
+                    line: { color: "#ff0000", width: 2, dash: "dash" },
+                  },
+                ],
+                annotations: [
+                  {
+                    x: 2,
+                    y: 8,
+                    xref: "x",
+                    yref: "y",
+                    text: "Vertical Asymptote at x = 2",
+                    showarrow: true,
+                    arrowhead: 2,
+                    ax: 20,
+                    ay: -30,
+                  },
+                ],
+              }}
               onClick={(data) => handlePlotClick(data, "f2")}
               className="mx-auto"
             />
-            <p className="mt-4">What happens to the graph as x approaches 2?</p>
-            <select
-              value={answers.q2}
-              onChange={(e) => handleAnswerChange("q2", e.target.value)}
-              disabled={submitted}
-              className="mt-2 p-2 border rounded bg-white text-black"
-            >
-              <option value="">Select</option>
-              <option value="vertical asymptote">Vertical Asymptote</option>
-              <option value="horizontal asymptote">Horizontal Asymptote</option>
-              <option value="zero">Becomes Zero</option>
-            </select>
-            {submitted && (
-              <p className="text-sm mt-2">
-                {answers.q2 === "vertical asymptote" ? "Correct! (4/4)" : "Incorrect. It has a vertical asymptote at x = 2. (0/4)"}
-              </p>
-            )}
-          </div>
-
-          {/* Function 3: f(x) = √x */}
-          <div className="mb-12">
-            <p className="text-lg font-semibold mb-2">3. Graph f(x) = √x (3 Marks)</p>
+            <p className="mt-4">Question: What happens to the graph as x approaches 2?</p>
             <input
               type="text"
+              value={answers.q2}
+              onChange={(e) => handleAnswerChange("q2", e.target.value)}
+              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              placeholder="Type your answer here"
+            />
+          </div>
+
+          <div className="mb-12">
+            <p className="text-lg font-semibold mb-2">3. Graph f(x) = log2(x - 1) (3 Marks)</p>
+            <select
               value={plots.f3.equation}
               onChange={(e) => handleEquationChange("f3", e.target.value)}
-              disabled={submitted}
               className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
-              placeholder="Enter equation (e.g., Math.sqrt(x))"
-            />
+            >
+              <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
+              <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
+              <option value="Math.log2(x - 1)">f(x) = log2(x - 1)</option>
+            </select>
             <Plot
               data={[
-                { x: plots.f3.points.map(p => p.x), y: plots.f3.points.map(p => p.y), type: "scatter", mode: "markers", name: "Your Points" },
-                { ...generateGraphData(plots.f3.equation), type: "scatter", mode: "lines", name: "f(x) = √x" },
+                { x: plots.f3.points.map((p) => p.x), y: plots.f3.points.map((p) => p.y), type: "scatter", mode: "markers", name: "Your Points", marker: { color: "#ff7f0e", size: 10 } },
+                generateGraphData(plots.f3.equation),
               ]}
-              layout={{ width: 500, height: 400, title: "f(x) = √x", xaxis: { range: [0, 10] }, yaxis: { range: [0, 5] } }}
+              layout={{
+                width: 600,
+                height: 450,
+                title: { text: "f(x) = log2(x - 1)", font: { size: 20 } },
+                xaxis: { range: [1, 10], title: { text: "x", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                yaxis: { range: [-3, 3], title: { text: "f(x)", font: { size: 16 } }, gridcolor: "#e0e0e0" },
+                plot_bgcolor: "#f8f9fa",
+                paper_bgcolor: "#f8f9fa",
+                showlegend: true,
+                legend: { x: 1, y: 1 },
+                shapes: [
+                  {
+                    type: "line",
+                    x0: 1,
+                    x1: 1,
+                    y0: -3,
+                    y1: 3,
+                    line: { color: "#ff0000", width: 2, dash: "dash" },
+                  },
+                ],
+                annotations: [
+                  {
+                    x: 1,
+                    y: 2,
+                    xref: "x",
+                    yref: "y",
+                    text: "Domain starts at x = 1",
+                    showarrow: true,
+                    arrowhead: 2,
+                    ax: 20,
+                    ay: -30,
+                  },
+                ],
+              }}
               onClick={(data) => handlePlotClick(data, "f3")}
               className="mx-auto"
             />
-            <p className="mt-4">What is the domain of the function?</p>
-            <select
+            <p className="mt-4">Question: What is the domain of the function?</p>
+            <input
+              type="text"
               value={answers.q3}
               onChange={(e) => handleAnswerChange("q3", e.target.value)}
-              disabled={submitted}
-              className="mt-2 p-2 border rounded bg-white text-black"
-            >
-              <option value="">Select</option>
-              <option value="all reals">All Real Numbers</option>
-              <option value="x ≥ 0">x ≥ 0</option>
-              <option value="x > 0">x > 0</option>
-            </select>
-            {submitted && (
-              <p className="text-sm mt-2">
-                {answers.q3 === "x ≥ 0" ? "Correct! (3/3)" : "Incorrect. Domain is x ≥ 0 since √x is real only for non-negative x. (0/3)"}
-              </p>
-            )}
+              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              placeholder="Type your answer here"
+            />
           </div>
 
           <div className="text-center">
-            {!submitted ? (
-              <button
-                onClick={handleSubmit}
-                className="px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-salmon transition ease-in-out"
-                disabled={!answers.q1 || !answers.q2 || !answers.q3}
-              >
-                Submit Assignment
-              </button>
-            ) : (
-              <>
-                <p className="text-xl text-primary font-semibold mb-4">
-                  Score: {score}/10 ({(score / 10 * 100).toFixed(2)}%)
-                </p>
-                <button
-                  onClick={resetAssignment}
-                  className="px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-salmon transition ease-in-out"
-                >
-                  Retry Assignment
-                </button>
-              </>
-            )}
+            <button
+              onClick={handleSubmit}
+              className="px-6 py-3 bg-accent text-white font-semibold rounded-lg shadow-lg hover:bg-salmon"
+            >
+              Submit Assignment
+            </button>
           </div>
         </div>
       </SignedIn>
