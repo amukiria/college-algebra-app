@@ -16,7 +16,9 @@ export default function AssignmentPage() {
     f3: { points: [], equation: "Math.log2(x - 1)" }, // f(x) = log2(x - 1)
   });
   const [answers, setAnswers] = useState({ q1: "", q2: "", q3: "" });
-  const pageRef = useRef(null);
+  const section1Ref = useRef(null);
+  const section2Ref = useRef(null);
+  const section3Ref = useRef(null);
   const { user } = useUser(); // Clerk hook to get user info
 
   const handlePlotClick = (data, funcKey) => {
@@ -58,41 +60,94 @@ export default function AssignmentPage() {
     };
   };
 
-  const handleSubmit = () => {
-    const input = pageRef.current;
-    html2canvas(input, { scale: 2 }).then((canvas) => {
+  const addHeader = (pdf, studentName, timestamp, currentPage, totalPages, margin) => {
+    pdf.setFontSize(12);
+    pdf.text(`Student Name: ${studentName}`, margin, 10);
+    pdf.text(`Course: MTH 1109 D – College Algebra`, margin, 16);
+    pdf.text(`Graphs Assignment`, margin, 22);
+    pdf.text(`Submission Time: ${timestamp}`, margin, 28);
+    pdf.text(`Page ${currentPage} of ${totalPages}`, pdf.internal.pageSize.getWidth() - margin - 30, 28);
+  };
+
+  const handleSubmit = async () => {
+    // Validation: Check if all answers are provided
+    const missingAnswers = [];
+    if (!answers.q1.trim()) missingAnswers.push("Question 1");
+    if (!answers.q2.trim()) missingAnswers.push("Question 2");
+    if (!answers.q3.trim()) missingAnswers.push("Question 3");
+
+    if (missingAnswers.length > 0) {
+      alert(`Please provide answers for the following questions: ${missingAnswers.join(", ")}.`);
+      return; // Stop PDF generation if validation fails
+    }
+
+    // Proceed with PDF generation if all answers are provided
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    let currentPage = 1;
+
+    // Student particulars
+    const studentName = user?.fullName || "Unknown Student";
+    const timestamp = new Date().toLocaleString();
+
+    // Array of sections to capture
+    const sections = [
+      { ref: section1Ref, title: "1. Graph f(x) = 3^(-x)" },
+      { ref: section2Ref, title: "2. Graph f(x) = (x + 1)/(x - 2)" },
+      { ref: section3Ref, title: "3. Graph f(x) = log2(x - 1)" },
+    ];
+
+    // Total pages (one section per page)
+    const totalPages = sections.length;
+
+    for (let i = 0; i < sections.length; i++) {
+      const { ref, title } = sections[i];
+      if (!ref.current) continue;
+
+      // Add a new page for each section
+      if (i > 0) {
+        pdf.addPage();
+        currentPage++;
+      }
+
+      // Add header to the page
+      addHeader(pdf, studentName, timestamp, currentPage, totalPages, margin);
+
+      // Capture the section with html2canvas
+      const canvas = await html2canvas(ref.current, { scale: 1, useCORS: true, backgroundColor: "#ffffff" });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const width = pdf.internal.pageSize.getWidth();
-      const height = (canvas.height * width) / canvas.width;
+      const imgWidth = pageWidth - 2 * margin; // Adjusted to fit within margin
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      // Add student name and timestamp at the top
-      const studentName = user?.fullName || "Unknown Student";
-      const timestamp = new Date().toLocaleString();
-      pdf.setFontSize(12);
-      pdf.text(`Student: ${studentName}`, 10, 10);
-      pdf.text(`Submitted: ${timestamp}`, 10, 20);
+      // Add section title
+      let currentY = 40; // Start below the header
+      pdf.setFontSize(16);
+      pdf.text(title, margin, currentY);
+      currentY += 10;
 
-      // Add the captured page content
-      pdf.addImage(imgData, "PNG", 0, 30, width, height - 30);
-      pdf.save("graphing-assignment.pdf");
-    });
+      // Add the captured image
+      pdf.addImage(imgData, "PNG", margin, currentY, imgWidth, imgHeight);
+    }
+
+    pdf.save("graphing-assignment.pdf");
   };
 
   return (
     <>
       <SignedIn>
-        <div ref={pageRef} className="p-8 bg-background min-h-screen text-text font-body">
+        <div className="p-8 bg-background min-h-screen text-text font-body">
           <h1 className="text-4xl font-extrabold text-primary mb-8 text-center">
             Graphing Assignment (Due: 2/4/2025)
           </h1>
 
-          <div className="mb-12">
+          <div ref={section1Ref} className="mb-12 bg-white p-4 rounded-lg">
             <p className="text-lg font-semibold mb-2">1. Graph f(x) = 3^(-x) (3 Marks)</p>
             <select
               value={plots.f1.equation}
               onChange={(e) => handleEquationChange("f1", e.target.value)}
-              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
             >
               <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
               <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
@@ -117,22 +172,21 @@ export default function AssignmentPage() {
               onClick={(data) => handlePlotClick(data, "f1")}
               className="mx-auto"
             />
-            <p className="mt-4">Question: Does the graph increase or decrease as x increases?</p>
-            <input
-              type="text"
+            <p className="mt-4 text-lg">Question: Does the graph increase or decrease as x increases?</p>
+            <textarea
               value={answers.q1}
               onChange={(e) => handleAnswerChange("q1", e.target.value)}
-              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mt-2 p-3 border rounded w-full max-w-md bg-white text-black text-lg h-24 resize-y"
               placeholder="Type your answer here"
             />
           </div>
 
-          <div className="mb-12">
+          <div ref={section2Ref} className="mb-12 bg-white p-4 rounded-lg">
             <p className="text-lg font-semibold mb-2">2. Graph f(x) = (x + 1)/(x - 2) (4 Marks)</p>
             <select
               value={plots.f2.equation}
               onChange={(e) => handleEquationChange("f2", e.target.value)}
-              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
             >
               <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
               <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
@@ -163,39 +217,25 @@ export default function AssignmentPage() {
                     line: { color: "#ff0000", width: 2, dash: "dash" },
                   },
                 ],
-                annotations: [
-                  {
-                    x: 2,
-                    y: 8,
-                    xref: "x",
-                    yref: "y",
-                    text: "Vertical Asymptote at x = 2",
-                    showarrow: true,
-                    arrowhead: 2,
-                    ax: 20,
-                    ay: -30,
-                  },
-                ],
               }}
               onClick={(data) => handlePlotClick(data, "f2")}
               className="mx-auto"
             />
-            <p className="mt-4">Question: What happens to the graph as x approaches 2?</p>
-            <input
-              type="text"
+            <p className="mt-4 text-lg">Question: What happens to the graph as x approaches 2?</p>
+            <textarea
               value={answers.q2}
               onChange={(e) => handleAnswerChange("q2", e.target.value)}
-              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mt-2 p-3 border rounded w-full max-w-md bg-white text-black text-lg h-24 resize-y"
               placeholder="Type your answer here"
             />
           </div>
 
-          <div className="mb-12">
+          <div ref={section3Ref} className="mb-12 bg-white p-4 rounded-lg">
             <p className="text-lg font-semibold mb-2">3. Graph f(x) = log2(x - 1) (3 Marks)</p>
             <select
               value={plots.f3.equation}
               onChange={(e) => handleEquationChange("f3", e.target.value)}
-              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mb-4 p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
             >
               <option value="Math.pow(3, -x)">f(x) = 3^(-x)</option>
               <option value="(x + 1) / (x - 2)">f(x) = (x + 1)/(x - 2)</option>
@@ -226,29 +266,15 @@ export default function AssignmentPage() {
                     line: { color: "#ff0000", width: 2, dash: "dash" },
                   },
                 ],
-                annotations: [
-                  {
-                    x: 1,
-                    y: 2,
-                    xref: "x",
-                    yref: "y",
-                    text: "Domain starts at x = 1",
-                    showarrow: true,
-                    arrowhead: 2,
-                    ax: 20,
-                    ay: -30,
-                  },
-                ],
               }}
               onClick={(data) => handlePlotClick(data, "f3")}
               className="mx-auto"
             />
-            <p className="mt-4">Question: What is the domain of the function?</p>
-            <input
-              type="text"
+            <p className="mt-4 text-lg">Question: What is the domain of the function?</p>
+            <textarea
               value={answers.q3}
               onChange={(e) => handleAnswerChange("q3", e.target.value)}
-              className="mt-2 p-2 border rounded w-full max-w-xs bg-white text-black"
+              className="mt-2 p-3 border rounded w-full max-w-md bg-white text-black text-lg h-24 resize-y"
               placeholder="Type your answer here"
             />
           </div>
