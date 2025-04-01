@@ -16,7 +16,6 @@ const TopBar = () => {
 
         <nav className="flex space-x-6 font-body text-secondary">
           <Link href="/" className="hover:text-accent">Home</Link>
-          <Link href="/dashboard" className="hover:text-accent">Dashboard</Link>
           <div className="relative group">
             <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">Lessons</a>
             <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
@@ -43,7 +42,23 @@ const TopBar = () => {
               </ul>
             </div>
           </div>
-          <Link href="/lessons/quiz" className="hover:text-accent">Quiz</Link>
+          {/* Changed Quiz link to a dropdown menu */}
+          <div className="relative group">
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">Quiz</a>
+            <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
+              <ul>
+                <li><Link href="/lessons/quiz" className="block px-4 py-2 hover:bg-gray-100">Quiz 1</Link></li>
+              </ul>
+            </div>
+          </div>
+          <div className="relative group">
+            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-accent">Assignment</a>
+            <div className="absolute left-0 top-full w-56 bg-white shadow-lg rounded hidden group-hover:block z-50">
+              <ul>
+                <li><Link href="/lessons/assignment" className="block px-4 py-2 hover:bg-gray-100">Graphing Assignment</Link></li>
+              </ul>
+            </div>
+          </div>
         </nav>
 
         <div className="flex items-center space-x-4">
