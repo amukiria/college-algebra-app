@@ -15,7 +15,7 @@ export default function Dashboard() {
       description: "Master polynomials and solve engaging puzzles.", 
       links: [
         { title: "Learn", path: "/lessons/polynomials/learn" },
-        { title: "Practice Exercises", path: "/lessons/polynomials/practice" }  // Now pointing to Polynomial Puzzle
+        { title: "Practice Exercises", path: "/lessons/polynomials/practice" }
       ]
     },
     { 
@@ -52,6 +52,42 @@ export default function Dashboard() {
       links: [
         { title: "Learn", path: "/lessons/quadratic-equations/learn" },
         { title: "Practice Exercises", path: "/lessons/quadratic-equations/practice" }
+      ]
+    },
+    { 
+      title: "Radicals", 
+      path: "/lessons/radicals", 
+      description: "Simplify and operate on radical expressions.",
+      links: [
+        { title: "Learn", path: "/lessons/radicals/learn" },
+        { title: "Practice Exercises", path: "/lessons/radicals/practice" }
+      ]
+    },
+    { 
+      title: "Complex Numbers", 
+      path: "/lessons/complex", 
+      description: "Explore operations with complex numbers.",
+      links: [
+        { title: "Learn", path: "/lessons/complex/learn" },
+        { title: "Practice Exercises", path: "/lessons/complex/practice" }
+      ]
+    },
+    { 
+      title: "Integers, Exponents, and Roots", 
+      path: "/lessons/exponents", 
+      description: "Understand integers, exponents, and roots with practical examples.",
+      links: [
+        { title: "Learn", path: "/lessons/exponents/learn" },
+        { title: "Practice Exercises", path: "/lessons/exponents/practice" }
+      ]
+    },
+    { 
+      title: "Binomial Expansions", 
+      path: "/lessons/binomial", 
+      description: "Learn to expand binomials using the Binomial Theorem.",
+      links: [
+        { title: "Learn", path: "/lessons/binomial/learn" },
+        { title: "Practice Exercises", path: "/lessons/binomial/practice" }
       ]
     },
   ];
