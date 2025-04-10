@@ -90,6 +90,15 @@ export default function Dashboard() {
         { title: "Practice Exercises", path: "/lessons/binomial/practice" }
       ]
     },
+    { 
+      title: "Progressions", 
+      path: "/lessons/progressions", 
+      description: "Explore arithmetic and geometric progressions.",
+      links: [
+        { title: "Learn", path: "/lessons/progressions/learn" },
+        { title: "Practice Exercises", path: "/lessons/progressions/practice" }
+      ]
+    },
   ];
 
   return (
