@@ -1,31 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 import { InlineMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
+function MathInput({ onChange }) {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    import("mathlive").then(() => {
+      const el = ref.current;
+      if (!el) return;
+      el.addEventListener("input", (evt) => {
+        const latex = el.getValue();
+        onChange(latex);
+      });
+    });
+  }, []);
+
+  return (
+    <math-field
+      ref={ref}
+      style={{
+        fontSize: "1.2rem",
+        padding: "8px",
+        border: "1px solid #d1d5db",
+        borderRadius: "6px",
+        minWidth: "200px",
+        display: "block",
+      }}
+    />
+  );
+}
+
 export default function RadicalsPracticePage() {
-  const [answers, setAnswers] = useState({
-    q1: "",
-    q2: "",
-    q3: "",
-  });
-  const [feedback, setFeedback] = useState({
-    q1: "",
-    q2: "",
-    q3: "",
-  });
-  const [hintIndex, setHintIndex] = useState({
-    q1: 0,
-    q2: 0,
-    q3: 0,
-  });
+  const [answers, setAnswers] = useState({ q1: "", q2: "", q3: "" });
+  const [feedback, setFeedback] = useState({ q1: "", q2: "", q3: "" });
+  const [hintIndex, setHintIndex] = useState({ q1: 0, q2: 0, q3: 0 });
 
   const correctAnswers = {
-    q1: "6\\sqrt{2}", // \sqrt{72}
-    q2: "5\\sqrt{3}", // 3\sqrt{3} + 2\sqrt{3}
-    q3: "\\frac{2\\sqrt{7}}{7}", // 2 / \sqrt{7}
+    q1: "6\\sqrt2",
+    q2: "5\\sqrt3",
+    q3: "\\frac{2\\sqrt{7}}{7}",
   };
 
   const hints = {
@@ -51,8 +68,12 @@ export default function RadicalsPracticePage() {
   };
 
   const checkAnswer = (question) => {
-    const userAnswer = answers[question].trim().replace(/\s/g, "");
-    const correctAnswer = correctAnswers[question].replace(/\s/g, "");
+    const normalize = (str) =>
+      str.trim().replace(/\s/g, "").replace(/\{/g, "").replace(/\}/g, "");
+    const userAnswer = normalize(answers[question]);
+    const correctAnswer = normalize(correctAnswers[question]);
+    console.log("User answer:", userAnswer);
+    console.log("Correct answer:", correctAnswer);
     if (userAnswer === correctAnswer) {
       setFeedback((prev) => ({ ...prev, [question]: "Correct!" }));
     } else {
@@ -70,6 +91,12 @@ export default function RadicalsPracticePage() {
     }));
   };
 
+  const questions = [
+    { key: "q1", label: <>1. Simplify: <InlineMath math="\sqrt{72}" />.</> },
+    { key: "q2", label: <>2. Simplify: <InlineMath math="3\sqrt{3} + 2\sqrt{3}" />.</> },
+    { key: "q3", label: <>3. Rationalize the denominator: <InlineMath math="\frac{2}{\sqrt{7}}" />.</> },
+  ];
+
   return (
     <>
       <SignedIn>
@@ -79,100 +106,43 @@ export default function RadicalsPracticePage() {
           </h1>
 
           <section className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-semibold text-secondary mb-4">Practice Problems</h2>
+            <h2 className="text-2xl font-semibold text-secondary mb-2">Practice Problems</h2>
+            <p className="text-sm text-gray-500 mb-6">
+              Use the math editor to type your answer. Click inside the box — it supports a full
+              math keyboard. You can also type directly: use{" "}
+              <code className="bg-gray-100 px-1 rounded">sqrt</code> for square roots and{" "}
+              <code className="bg-gray-100 px-1 rounded">/</code> for fractions.
+            </p>
 
-            <div className="mb-6">
-              <p className="text-lg mb-2">
-                1. Simplify: <InlineMath math="\sqrt{72}" />.
-              </p>
-              <input
-                type="text"
-                value={answers.q1}
-                onChange={(e) => handleAnswerChange("q1", e.target.value)}
-                className="p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
-              />
-              <div className="mt-2 flex space-x-4">
-                <button
-                  onClick={() => checkAnswer("q1")}
-                  className="px-4 py-2 bg-accent text-white rounded hover:bg-salmon"
-                >
-                  Check Answer
-                </button>
-                <button
-                  onClick={() => showHint("q1")}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  disabled={hintIndex.q1 >= hints.q1.length - 1}
-                >
-                  Show Hint
-                </button>
+            {questions.map(({ key, label }) => (
+              <div key={key} className="mb-8">
+                <p className="text-lg mb-2">{label}</p>
+                <MathInput
+                  onChange={(val) => handleAnswerChange(key, val)}
+                />
+                <div className="mt-3 flex space-x-4">
+                  <button
+                    onClick={() => checkAnswer(key)}
+                    className="px-4 py-2 bg-accent text-white rounded hover:bg-salmon"
+                  >
+                    Check Answer
+                  </button>
+                  <button
+                    onClick={() => showHint(key)}
+                    className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                    disabled={hintIndex[key] >= hints[key].length - 1}
+                  >
+                    Show Hint
+                  </button>
+                </div>
+                {hintIndex[key] > 0 && (
+                  <p className="mt-2 text-lg text-gray-700">
+                    Hint: {hints[key][hintIndex[key] - 1]}
+                  </p>
+                )}
+                <p className="mt-2 text-lg">{feedback[key]}</p>
               </div>
-              {hintIndex.q1 > 0 && (
-                <p className="mt-2 text-lg text-gray-700">Hint: {hints.q1[hintIndex.q1 - 1]}</p>
-              )}
-              <p className="mt-2 text-lg">{feedback.q1}</p>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-lg mb-2">
-                2. Simplify: <InlineMath math="3\sqrt{3} + 2\sqrt{3}" />.
-              </p>
-              <input
-                type="text"
-                value={answers.q2}
-                onChange={(e) => handleAnswerChange("q2", e.target.value)}
-                className="p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
-              />
-              <div className="mt-2 flex space-x-4">
-                <button
-                  onClick={() => checkAnswer("q2")}
-                  className="px-4 py-2 bg-accent text-white rounded hover:bg-salmon"
-                >
-                  Check Answer
-                </button>
-                <button
-                  onClick={() => showHint("q2")}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  disabled={hintIndex.q2 >= hints.q2.length - 1}
-                >
-                  Show Hint
-                </button>
-              </div>
-              {hintIndex.q2 > 0 && (
-                <p className="mt-2 text-lg text-gray-700">Hint: {hints.q2[hintIndex.q2 - 1]}</p>
-              )}
-              <p className="mt-2 text-lg">{feedback.q2}</p>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-lg mb-2">
-                3. Rationalize the denominator: <InlineMath math="\frac{2}{\sqrt{7}}" />.
-              </p>
-              <input
-                type="text"
-                value={answers.q3}
-                onChange={(e) => handleAnswerChange("q3", e.target.value)}
-                className="p-2 border rounded w-full max-w-xs bg-white text-black text-lg"
-              />
-              <div className="mt-2 flex space-x-4">
-                <button
-                  onClick={() => checkAnswer("q3")}
-                  className="px-4 py-2 bg-accent text-white rounded hover:bg-salmon"
-                >
-                  Check Answer
-                </button>
-                <button
-                  onClick={() => showHint("q3")}
-                  className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                  disabled={hintIndex.q3 >= hints.q3.length - 1}
-                >
-                  Show Hint
-                </button>
-              </div>
-              {hintIndex.q3 > 0 && (
-                <p className="mt-2 text-lg text-gray-700">Hint: {hints.q3[hintIndex.q3 - 1]}</p>
-              )}
-              <p className="mt-2 text-lg">{feedback.q3}</p>
-            </div>
+            ))}
           </section>
         </div>
       </SignedIn>
