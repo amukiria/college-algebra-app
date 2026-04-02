@@ -19,7 +19,9 @@ function MathInput({ onChange, resetKey }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    el.setValue("");
+    import("mathlive").then(() => {
+      if (el.setValue) el.setValue("");
+    });
   }, [resetKey]);
 
   return (
@@ -126,8 +128,8 @@ export default function RationalExpressionsPractice() {
       <SignedIn>
         <div className="bg-background min-h-screen font-body">
 
-          <div className="bg-primary text-white py-12 px-8 text-center">
-            <h1 className="text-4xl font-extrabold mb-2 text-white">Fraction Frenzy</h1>
+          <div className="bg-primary py-12 px-8 text-center">
+            <h1 className="text-4xl font-extrabold mb-2 text-white">Fraction Frenzy Race</h1>
             <p className="text-blue-100 text-lg">Simplify or multiply 5 rational expressions to cross the finish line.</p>
           </div>
 
