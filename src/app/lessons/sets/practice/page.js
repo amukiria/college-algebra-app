@@ -99,7 +99,7 @@ export default function SetsPractice() {
         <div className="bg-background min-h-screen font-body">
 
           <div className="bg-primary text-white py-12 px-8 text-center">
-            <h1 className="text-4xl font-extrabold mb-2">Set Explorer Mission</h1>
+            <h1 className="text-4xl font-extrabold mb-2 text-white">Set Explorer Mission</h1>
             <p className="text-blue-100 text-lg">Solve 5 challenges to collect all treasures.</p>
           </div>
 
