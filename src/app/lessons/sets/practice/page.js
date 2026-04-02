@@ -1,351 +1,223 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import * as d3 from "d3";
-import * as venn from "venn.js";
+import React, { useState, useEffect } from "react";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
 
+function VennDiagram({ setA, setB, operation }) {
+  const fillA = operation === "Union" ? "#0066FF22" : operation === "Difference" ? "#0066FF33" : "#0066FF11";
+  const fillB = operation === "Union" ? "#0099AA22" : operation === "Intersection" ? "#0099AA22" : "#0099AA11";
+  const fillIntersection = operation === "Union" ? "#6655DD44" : operation === "Intersection" ? "#6655DD66" : "transparent";
+  const strokeA = operation === "Union" || operation === "Difference" ? "#0066FF" : "#0066FF88";
+  const strokeB = operation === "Union" || operation === "Intersection" ? "#0099AA" : "#0099AA88";
+
+  return (
+    <svg viewBox="0 0 500 260" className="w-full max-w-lg mx-auto">
+      <circle cx="190" cy="130" r="110" fill={fillA} stroke={strokeA} strokeWidth="2.5" />
+      <circle cx="310" cy="130" r="110" fill={fillB} stroke={strokeB} strokeWidth="2.5" />
+      <clipPath id="clipA">
+        <circle cx="190" cy="130" r="110" />
+      </clipPath>
+      <circle cx="310" cy="130" r="110" fill={fillIntersection} clipPath="url(#clipA)" />
+      <text x="120" y="50" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#0066FF">A</text>
+      <text x="380" y="50" textAnchor="middle" fontSize="18" fontWeight="bold" fill="#0099AA">B</text>
+      <text x="128" y="220" textAnchor="middle" fontSize="10" fill="#6b7280">only A</text>
+      <text x="250" y="220" textAnchor="middle" fontSize="10" fill="#6b7280">A ∩ B</text>
+      <text x="372" y="220" textAnchor="middle" fontSize="10" fill="#6b7280">only B</text>
+    </svg>
+  );
+}
+
+function TreasureIcon({ filled }) {
+  return (
+    <span className={`text-2xl ${filled ? "opacity-100" : "opacity-20"}`}>💎</span>
+  );
+}
+
 export default function SetsPractice() {
-  const [level, setLevel] = useState(1);
-  const [treasures, setTreasures] = useState(0);
   const [currentChallenge, setCurrentChallenge] = useState(0);
+  const [treasures, setTreasures] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
-  const [feedback, setFeedback] = useState("");
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [vennData, setVennData] = useState([
-    { sets: ["A"], size: 0 },
-    { sets: ["B"], size: 0 },
-    { sets: ["A", "B"], size: 0 },
-  ]);
-  const [isMounted, setIsMounted] = useState(false);
-  const vennRef = useRef(null);
+  const [feedback, setFeedback] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [gameState, setGameState] = useState("playing");
 
-  const twoSetChallenges = [
-    {
-      setA: [1, 2, 3],
-      setB: [3, 4, 5],
-      operation: "Intersection",
-      question: "Find A ∩ B",
-      solution: "3",
-    },
-    {
-      setA: [2, 4, 6],
-      setB: [1, 3, 5],
-      operation: "Union",
-      question: "Find A ∪ B",
-      solution: "1,2,3,4,5,6",
-    },
-    {
-      setA: [1, 2, 3],
-      setB: [2, 3, 4],
-      operation: "Difference",
-      question: "Find A - B",
-      solution: "1",
-    },
-    {
-      setA: [4, 5, 6],
-      setB: [5, 6, 7],
-      operation: "Intersection",
-      question: "Find A ∩ B",
-      solution: "5,6",
-    },
-    {
-      setA: [1, 2],
-      setB: [3, 4],
-      operation: "Union",
-      question: "Find A ∪ B",
-      solution: "1,2,3,4",
-    },
+  const challenges = [
+    { setA: [1, 2, 3], setB: [3, 4, 5], operation: "Intersection", question: "Find A ∩ B", solution: "3" },
+    { setA: [2, 4, 6], setB: [1, 3, 5], operation: "Union", question: "Find A ∪ B", solution: "1,2,3,4,5,6" },
+    { setA: [1, 2, 3], setB: [2, 3, 4], operation: "Difference", question: "Find A − B", solution: "1" },
+    { setA: [4, 5, 6], setB: [5, 6, 7], operation: "Intersection", question: "Find A ∩ B", solution: "5,6" },
+    { setA: [1, 2], setB: [3, 4], operation: "Union", question: "Find A ∪ B", solution: "1,2,3,4" },
   ];
 
-  const threeSetChallenges = [
-    {
-      setA: [1, 2, 3, 4],
-      setB: [2, 3, 5],
-      setC: [3, 6],
-      operation: "Intersection",
-      question: "Find A ∩ B ∩ C",
-      solution: "3",
-    },
-    {
-      setA: [1, 2],
-      setB: [2, 3],
-      setC: [3, 4],
-      operation: "Union",
-      question: "Find A ∪ B ∪ C",
-      solution: "1,2,3,4",
-    },
-    {
-      setA: [5, 6, 7],
-      setB: [6, 8],
-      setC: [7, 9],
-      operation: "Difference",
-      question: "Find A - (B ∪ C)",
-      solution: "5",
-    },
-    {
-      setA: [2, 4, 6],
-      setB: [4, 6, 8],
-      setC: [6, 8, 10],
-      operation: "Intersection",
-      question: "Find A ∩ B ∩ C",
-      solution: "6",
-    },
-    {
-      setA: [1, 3, 5],
-      setB: [2, 4, 5],
-      setC: [3, 5, 6],
-      operation: "Union",
-      question: "Find A ∪ B ∪ C",
-      solution: "1,2,3,4,5,6",
-    },
-  ];
-
-  const challenges = level === 1 ? twoSetChallenges : threeSetChallenges;
+  const current = challenges[currentChallenge];
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
-    updateVennDiagram(vennData);
-
-    if (timeLeft > 0 && treasures < 5) {
-      const timer = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0) {
-      setFeedback("Time’s up! The treasure slips away.");
-    }
-  }, [timeLeft, treasures, isMounted]);
-
-  const updateVennDiagram = (newData) => {
-    if (!vennRef.current) return;
-
-    const vennElement = d3.select(vennRef.current);
-    vennElement.selectAll("*").remove();
-    const chart = venn.VennDiagram().width(400).height(400);
-    vennElement
-      .datum(newData)
-      .call(chart)
-      .transition()
-      .duration(1000)
-      .style("opacity", 1);
-  };
+    if (gameState !== "playing") return;
+    if (timeLeft === 0) { setGameState("lost"); return; }
+    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft, gameState]);
 
   const checkAnswer = () => {
-    const current = challenges[currentChallenge];
-    const expected = current.solution;
-    // Normalize user input: remove spaces, sort if multiple elements
-    const userTrimmed = userAnswer
-      .trim()
-      .split(",")
-      .map((x) => x.trim())
-      .filter((x) => x !== "")
-      .sort((a, b) => a - b)
-      .join(",");
-    const expectedTrimmed = expected
-      .split(",")
-      .map((x) => x.trim())
-      .sort((a, b) => a - b)
-      .join(",");
+    const normalize = (str) =>
+      str.split(",").map((x) => x.trim()).filter((x) => x !== "").map(Number).sort((a, b) => a - b).join(",");
 
-    if (userTrimmed === expectedTrimmed) {
-      setTreasures(treasures + 1);
-      setFeedback(level === 1 ? "Treasure found! Onward!" : "Gem secured! Keep hunting!");
+    if (normalize(userAnswer) === normalize(current.solution)) {
+      const newTreasures = treasures + 1;
+      setTreasures(newTreasures);
+      setFeedback({ type: "correct", message: "Correct! Treasure claimed! 🎉" });
 
-      let newData;
-      if (level === 1) {
-        switch (current.operation) {
-          case "Intersection":
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["A", "B"], size: current.setA.filter((x) => current.setB.includes(x)).length },
-            ];
-            break;
-          case "Union":
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["A", "B"], size: [...new Set([...current.setA, ...current.setB])].length },
-            ];
-            break;
-          case "Difference":
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["A", "B"], size: current.setA.filter((x) => !current.setB.includes(x)).length },
-            ];
-            break;
-          default:
-            newData = vennData;
-        }
+      if (newTreasures === 5) {
+        setTimeout(() => setGameState("won"), 800);
       } else {
-        const intersectionAB = current.setA.filter((x) => current.setB.includes(x));
-        const intersectionAC = current.setA.filter((x) => current.setC.includes(x));
-        const intersectionBC = current.setB.filter((x) => current.setC.includes(x));
-        const intersectionABC = current.setA.filter(
-          (x) => current.setB.includes(x) && current.setC.includes(x)
-        );
-        switch (current.operation) {
-          case "Intersection":
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["C"], size: current.setC.length },
-              { sets: ["A", "B"], size: intersectionAB.length },
-              { sets: ["A", "C"], size: intersectionAC.length },
-              { sets: ["B", "C"], size: intersectionBC.length },
-              { sets: ["A", "B", "C"], size: intersectionABC.length },
-            ];
-            break;
-          case "Union":
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["C"], size: current.setC.length },
-              { sets: ["A", "B"], size: [...new Set([...current.setA, ...current.setB])].length },
-              { sets: ["A", "C"], size: [...new Set([...current.setA, ...current.setC])].length },
-              { sets: ["B", "C"], size: [...new Set([...current.setB, ...current.setC])].length },
-              { sets: ["A", "B", "C"], size: [...new Set([...current.setA, ...current.setB, ...current.setC])].length },
-            ];
-            break;
-          case "Difference":
-            const unionBC = [...new Set([...current.setB, ...current.setC])];
-            newData = [
-              { sets: ["A"], size: current.setA.length },
-              { sets: ["B"], size: current.setB.length },
-              { sets: ["C"], size: current.setC.length },
-              { sets: ["A", "B"], size: intersectionAB.length },
-              { sets: ["A", "C"], size: intersectionAC.length },
-              { sets: ["B", "C"], size: intersectionBC.length },
-              { sets: ["A", "B", "C"], size: current.setA.filter((x) => !unionBC.includes(x)).length },
-            ];
-            break;
-          default:
-            newData = vennData;
-        }
-      }
-      setVennData(newData);
-      updateVennDiagram(newData);
-
-      if (treasures + 1 < 5) {
-        setCurrentChallenge(currentChallenge + 1);
-        setUserAnswer("");
-        setTimeLeft(30);
-      } else if (level === 1) {
-        setLevel(2);
-        setTreasures(0);
-        setCurrentChallenge(0);
-        setUserAnswer("");
-        setFeedback("Level 1 Complete! Welcome to Level 2: Set Treasure Triad!");
-        setTimeLeft(30);
-        setVennData([
-          { sets: ["A"], size: 0 },
-          { sets: ["B"], size: 0 },
-          { sets: ["C"], size: 0 },
-          { sets: ["A", "B"], size: 0 },
-          { sets: ["A", "C"], size: 0 },
-          { sets: ["B", "C"], size: 0 },
-          { sets: ["A", "B", "C"], size: 0 },
-        ]);
-        updateVennDiagram([
-          { sets: ["A"], size: 0 },
-          { sets: ["B"], size: 0 },
-          { sets: ["C"], size: 0 },
-          { sets: ["A", "B"], size: 0 },
-          { sets: ["A", "C"], size: 0 },
-          { sets: ["B", "C"], size: 0 },
-          { sets: ["A", "B", "C"], size: 0 },
-        ]);
+        setTimeout(() => {
+          setCurrentChallenge((c) => c + 1);
+          setUserAnswer("");
+          setFeedback(null);
+          setTimeLeft(60);
+        }, 1000);
       }
     } else {
-      setFeedback(
-        level === 1
-          ? `Wrong path! Expected: ${expected}`
-          : `Wrong! Expected: ${expected}`
-      );
+      setFeedback({ type: "wrong", message: "Not quite. Try again!" });
     }
   };
+
+  const restart = () => {
+    setCurrentChallenge(0);
+    setTreasures(0);
+    setUserAnswer("");
+    setFeedback(null);
+    setTimeLeft(60);
+    setGameState("playing");
+  };
+
+  const timerColor = timeLeft > 30 ? "text-green-600" : timeLeft > 10 ? "text-amber-500" : "text-red-500";
 
   return (
     <>
       <SignedIn>
-        <div className="p-8 bg-background min-h-screen text-text font-body">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold mb-6 text-primary text-center">
-            Sets Practice: {level === 1 ? "Set Explorer Mission" : "Set Treasure Triad"}
-          </h1>
-          <p className="text-lg mb-4 text-center">
-            Level {level}: Solve 5 challenges to collect {level === 1 ? "treasures" : "gems"}! {level === 1 ? "Treasures" : "Gems"}: {treasures}/5 | Time Left: {timeLeft}s
-          </p>
+        <div className="bg-background min-h-screen font-body">
 
-          {treasures < 5 && timeLeft > 0 ? (
-            <div className="max-w-md mx-auto bg-lightNeutral p-6 rounded-lg shadow-md">
-              <p className="text-lg mb-2">
-                Set A: {"{" + challenges[currentChallenge].setA.join(", ") + "}"}
-              </p>
-              <p className="text-lg mb-2">
-                Set B: {"{" + challenges[currentChallenge].setB.join(", ") + "}"}
-              </p>
-              {level === 2 && (
-                <p className="text-lg mb-4">
-                  Set C: {"{" + challenges[currentChallenge].setC.join(", ") + "}"}
-                </p>
-              )}
-              <p className="text-lg mb-4 font-semibold text-primary">
-                {challenges[currentChallenge].question}
-              </p>
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                placeholder="Enter result (e.g., 3 or 1,2,3)"
-                className="w-full p-2 mb-4 border rounded"
-              />
-              <button
-                onClick={checkAnswer}
-                className="w-full bg-accent text-white px-4 py-2 rounded hover:bg-salmon transition duration-300"
-              >
-                {level === 1 ? "Claim Treasure" : "Unlock Gem"}
-              </button>
-              {feedback && <p className="mt-4 text-center">{feedback}</p>}
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-2xl text-primary font-semibold">
-                {treasures === 5 && level === 2 ? "Mission Complete! You’re a Set Master!" : "Level Failed! Time ran out."}
-              </p>
-              <button
-                onClick={() => {
-                  setLevel(1);
-                  setTreasures(0);
-                  setCurrentChallenge(0);
-                  setUserAnswer("");
-                  setFeedback("");
-                  setTimeLeft(30);
-                  setVennData([
-                    { sets: ["A"], size: 0 },
-                    { sets: ["B"], size: 0 },
-                    { sets: ["A", "B"], size: 0 },
-                  ]);
-                  updateVennDiagram([
-                    { sets: ["A"], size: 0 },
-                    { sets: ["B"], size: 0 },
-                    { sets: ["A", "B"], size: 0 },
-                  ]);
-                }}
-                className="mt-4 bg-accent text-white px-6 py-3 rounded-lg hover:bg-salmon transition duration-300"
-              >
-                Restart from Level 1
-              </button>
-            </div>
-          )}
+          <div className="bg-primary text-white py-12 px-8 text-center">
+            <h1 className="text-4xl font-extrabold mb-2">Set Explorer Mission</h1>
+            <p className="text-blue-100 text-lg">Solve 5 challenges to collect all treasures.</p>
+          </div>
 
-          {isMounted && (
-            <div ref={vennRef} id="venn" className="flex justify-center w-full max-w-md mt-8"></div>
-          )}
+          <div className="max-w-2xl mx-auto px-6 py-10">
+
+            {gameState === "playing" && (
+              <>
+                <div className="mb-8">
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex gap-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <TreasureIcon key={i} filled={i < treasures} />
+                      ))}
+                    </div>
+                    <span className={`text-2xl font-extrabold ${timerColor}`}>
+                      {timeLeft}s
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-primary h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${(treasures / 5) * 100}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">Challenge {currentChallenge + 1} of 5</p>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+                  <VennDiagram
+                    setA={current.setA}
+                    setB={current.setB}
+                    operation={current.operation}
+                  />
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-md p-6 mb-4">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                      current.operation === "Intersection" ? "bg-purple-100 text-purple-700" :
+                      current.operation === "Union" ? "bg-blue-100 text-blue-700" :
+                      "bg-teal-100 text-teal-700"
+                    }`}>
+                      {current.operation}
+                    </span>
+                  </div>
+                  <p className="text-lg font-semibold text-gray-800 mb-1">{current.question}</p>
+                  <p className="text-sm text-gray-500 mb-4">
+                    A = {"{" + current.setA.join(", ") + "}"} &nbsp;|&nbsp; B = {"{" + current.setB.join(", ") + "}"}
+                  </p>
+
+                  <input
+                    type="text"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && checkAnswer()}
+                    placeholder="Enter elements separated by commas, e.g. 1,2,3"
+                    className="w-full p-3 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-4"
+                  />
+
+                  <button
+                    onClick={checkAnswer}
+                    className="w-full py-3 bg-accent text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                  >
+                    Claim Treasure
+                  </button>
+
+                  {feedback && (
+                    <div className={`mt-4 text-center py-3 rounded-xl text-sm font-semibold ${
+                      feedback.type === "correct"
+                        ? "bg-green-50 text-green-700 border border-green-200"
+                        : "bg-red-50 text-red-700 border border-red-200"
+                    }`}>
+                      {feedback.message}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {gameState === "won" && (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-6">🏆</div>
+                <h2 className="text-3xl font-extrabold text-primary mb-3">Mission Complete!</h2>
+                <p className="text-gray-600 mb-2">You collected all 5 treasures.</p>
+                <div className="flex justify-center gap-2 mb-8">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TreasureIcon key={i} filled={true} />
+                  ))}
+                </div>
+                <button
+                  onClick={restart}
+                  className="px-8 py-3 bg-accent text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Play Again
+                </button>
+              </div>
+            )}
+
+            {gameState === "lost" && (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-6">⏱️</div>
+                <h2 className="text-3xl font-extrabold text-primary mb-3">Time's Up!</h2>
+                <p className="text-gray-600 mb-2">You collected {treasures} of 5 treasures.</p>
+                <div className="flex justify-center gap-2 mb-8">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <TreasureIcon key={i} filled={i < treasures} />
+                  ))}
+                </div>
+                <button
+                  onClick={restart}
+                  className="px-8 py-3 bg-accent text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+
+          </div>
         </div>
       </SignedIn>
       <SignedOut>
