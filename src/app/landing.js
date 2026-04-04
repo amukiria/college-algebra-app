@@ -3,7 +3,7 @@ import TopBar from "@/components/TopBar";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
-  title: "MTH 1109 - College Algebra",
+  title: "College Algebra",
   description: "Learn and practice College Algebra interactively.",
 };
 
