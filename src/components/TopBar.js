@@ -10,7 +10,7 @@ const TopBar = () => {
       <div className="container px-4 py-3 flex items-center justify-between">
         <div className="text-2xl font-heading">
           <Link href="/" className="hover:text-accent">
-            MTH 1109 - College Algebra
+            College Algebra
           </Link>
         </div>
 
