@@ -1,259 +1,548 @@
 "use client";
 
-import React from "react";
-import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
-import { BlockMath, InlineMath } from "react-katex";
+import React, { useState } from "react";
+import { InlineMath, BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
+import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/nextjs";
+
+// --- Worked Examples ---
+const workedExamples = {
+  multiplication: {
+    title: "Expanding by Multiplication",
+    problem: "(a + b)^3",
+    steps: [
+      {
+        label: "Write the expression",
+        math: "(a + b)^3 = (a + b)(a + b)^2",
+        explanation: "Break the cube into a product of (a+b) and (a+b)².",
+        highlight: "both",
+      },
+      {
+        label: "Expand (a+b)² first",
+        math: "(a + b)^2 = a^2 + 2ab + b^2",
+        explanation: "Use FOIL or the known result: (a+b)² = a² + 2ab + b².",
+        highlight: "first",
+      },
+      {
+        label: "Multiply (a+b) by the result",
+        math: "(a + b)(a^2 + 2ab + b^2)",
+        explanation: "Distribute (a+b) across each term of a² + 2ab + b².",
+        highlight: "outer",
+      },
+      {
+        label: "Distribute a",
+        math: "a(a^2 + 2ab + b^2) = a^3 + 2a^2b + ab^2",
+        explanation: "Multiply a by each term inside the brackets.",
+        highlight: "inner",
+      },
+      {
+        label: "Distribute b",
+        math: "b(a^2 + 2ab + b^2) = a^2b + 2ab^2 + b^3",
+        explanation: "Multiply b by each term inside the brackets.",
+        highlight: "combine",
+      },
+      {
+        label: "Combine like terms",
+        math: "a^3 + 2a^2b + ab^2 + a^2b + 2ab^2 + b^3",
+        explanation: "Add all the terms together and group like terms.",
+        highlight: "result",
+      },
+      {
+        label: "Final answer",
+        math: "a^3 + 3a^2b + 3ab^2 + b^3",
+        explanation: "Simplify: 2a²b + a²b = 3a²b and ab² + 2ab² = 3ab².",
+        highlight: "result",
+      },
+    ],
+  },
+  pascal: {
+    title: "Pascal's Triangle",
+    problem: "(p + q)^5",
+    steps: [
+      {
+        label: "Identify the power",
+        math: "(p + q)^5 \\quad n = 5",
+        explanation: "We need row n=5 from Pascal's Triangle to find the coefficients.",
+        highlight: "both",
+      },
+      {
+        label: "Read row 5 from Pascal's Triangle",
+        math: "1 \\quad 5 \\quad 10 \\quad 10 \\quad 5 \\quad 1",
+        explanation: "Each number is the sum of the two numbers above it in the triangle.",
+        highlight: "first",
+      },
+      {
+        label: "Write the terms without coefficients",
+        math: "p^5, \\; p^4q, \\; p^3q^2, \\; p^2q^3, \\; pq^4, \\; q^5",
+        explanation: "The power of p decreases from 5 to 0, and the power of q increases from 0 to 5. They always add to 5.",
+        highlight: "outer",
+      },
+      {
+        label: "Apply the coefficients",
+        math: "1 \\cdot p^5 + 5 \\cdot p^4q + 10 \\cdot p^3q^2 + 10 \\cdot p^2q^3 + 5 \\cdot pq^4 + 1 \\cdot q^5",
+        explanation: "Multiply each term by its corresponding coefficient from Pascal's Triangle.",
+        highlight: "inner",
+      },
+      {
+        label: "Final answer",
+        math: "p^5 + 5p^4q + 10p^3q^2 + 10p^2q^3 + 5pq^4 + q^5",
+        explanation: "This is the fully expanded form of (p+q)⁵.",
+        highlight: "result",
+      },
+      {
+        label: "Sign pattern for (p−q)⁵",
+        math: "p^5 - 5p^4q + 10p^3q^2 - 10p^2q^3 + 5pq^4 - q^5",
+        explanation: "When the second term is negative, the signs alternate: +, −, +, −, ... This is because (−q)^odd is negative.",
+        highlight: "result",
+      },
+    ],
+  },
+  theorem: {
+    title: "Binomial Theorem",
+    problem: "(2x + 3y)^4",
+    steps: [
+      {
+        label: "State the Binomial Theorem",
+        math: "(a + b)^n = \\sum_{k=0}^{n} \\binom{n}{k} a^{n-k} b^k",
+        explanation: "The Binomial Theorem gives a formula for expanding any binomial raised to a power.",
+        highlight: "both",
+      },
+      {
+        label: "Identify a, b, and n",
+        math: "a = 2x, \\quad b = 3y, \\quad n = 4",
+        explanation: "Read the values directly from the expression.",
+        highlight: "first",
+      },
+      {
+        label: "Get coefficients for n=4",
+        math: "\\binom{4}{0}=1, \\; \\binom{4}{1}=4, \\; \\binom{4}{2}=6, \\; \\binom{4}{3}=4, \\; \\binom{4}{4}=1",
+        explanation: "Calculate each binomial coefficient using n! / (k!(n−k)!). These match row 4 of Pascal's Triangle.",
+        highlight: "outer",
+      },
+      {
+        label: "Write all terms",
+        math: "(2x)^4 + 4(2x)^3(3y) + 6(2x)^2(3y)^2 + 4(2x)(3y)^3 + (3y)^4",
+        explanation: "Apply the formula: each term is C(4,k) × (2x)^(4−k) × (3y)^k.",
+        highlight: "inner",
+      },
+      {
+        label: "Simplify each term",
+        math: "16x^4 + 4(8x^3)(3y) + 6(4x^2)(9y^2) + 4(2x)(27y^3) + 81y^4",
+        explanation: "Evaluate the powers: (2x)⁴=16x⁴, (2x)³=8x³, (3y)²=9y², (3y)³=27y³, (3y)⁴=81y⁴.",
+        highlight: "combine",
+      },
+      {
+        label: "Final answer",
+        math: "16x^4 + 96x^3y + 216x^2y^2 + 216xy^3 + 81y^4",
+        explanation: "Multiply all coefficients: 4×8×3=96, 6×4×9=216, 4×2×27=216.",
+        highlight: "result",
+      },
+    ],
+  },
+  numerical: {
+    title: "Numerical Applications",
+    problem: "(1.02)^6",
+    steps: [
+      {
+        label: "Rewrite as a binomial",
+        math: "(1.02)^6 = (1 + 0.02)^6",
+        explanation: "Write 1.02 as 1 + 0.02 so we can apply the Binomial Theorem with a=1 and b=0.02.",
+        highlight: "both",
+      },
+      {
+        label: "Get coefficients for n=6",
+        math: "1, \\; 6, \\; 15, \\; 20, \\; 15, \\; 6, \\; 1",
+        explanation: "Row 6 from Pascal's Triangle gives the coefficients.",
+        highlight: "first",
+      },
+      {
+        label: "Write the expansion",
+        math: "1 + 6(0.02) + 15(0.02)^2 + 20(0.02)^3 + \\cdots",
+        explanation: "Since a=1, aⁿ⁻ᵏ = 1 for all terms. We only need to evaluate powers of 0.02.",
+        highlight: "outer",
+      },
+      {
+        label: "Evaluate each term",
+        math: "1 + 0.12 + 0.006 + 0.00016 + \\cdots",
+        explanation: "6×0.02=0.12, 15×0.0004=0.006, 20×0.000008=0.00016. Later terms are negligible.",
+        highlight: "inner",
+      },
+      {
+        label: "Sum the significant terms",
+        math: "1 + 0.12 + 0.006 + 0.00016 = 1.12616",
+        explanation: "We can stop here — the remaining terms are smaller than 0.0001 and won't affect 4 significant figures.",
+        highlight: "combine",
+      },
+      {
+        label: "Final answer",
+        math: "(1.02)^6 \\approx 1.126 \\text{ (4 significant figures)}",
+        explanation: "Round to 4 significant figures. This technique works well when b is small compared to a.",
+        highlight: "result",
+      },
+    ],
+  },
+};
+
+function WorkedExample({ example }) {
+  const [step, setStep] = useState(0);
+  const [animating, setAnimating] = useState(false);
+
+  const current = example.steps[step];
+  const isFirst = step === 0;
+  const isLast = step === example.steps.length - 1;
+
+  const goTo = (newStep) => {
+    setAnimating(true);
+    setTimeout(() => {
+      setStep(newStep);
+      setAnimating(false);
+    }, 200);
+  };
+
+  React.useEffect(() => {
+    setStep(0);
+  }, [example]);
+
+  const highlightColor = {
+    both: "bg-blue-50 border-blue-200",
+    first: "bg-teal-50 border-teal-200",
+    outer: "bg-purple-50 border-purple-200",
+    inner: "bg-amber-50 border-amber-200",
+    combine: "bg-orange-50 border-orange-200",
+    result: "bg-green-50 border-green-200",
+  }[current.highlight] || "bg-gray-50 border-gray-200";
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center mb-6">
+        <p className="text-sm text-gray-500 mb-1">Problem</p>
+        <div className="text-2xl"><InlineMath math={example.problem} /></div>
+      </div>
+
+      <div className={`border rounded-xl p-6 mb-6 transition-all duration-300 ${animating ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"} ${highlightColor}`}>
+        <div className="flex items-center gap-3 mb-3">
+          <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full">
+            Step {step + 1} of {example.steps.length}
+          </span>
+          <span className="text-sm font-semibold text-gray-700">{current.label}</span>
+        </div>
+        <div className="text-xl text-center mb-4">
+          <InlineMath math={current.math} />
+        </div>
+        <p className="text-sm text-gray-600 text-center">{current.explanation}</p>
+      </div>
+
+      <div className="flex justify-center gap-2 mb-6">
+        {example.steps.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            className={`w-2.5 h-2.5 rounded-full transition-all ${i === step ? "bg-primary scale-125" : "bg-gray-300 hover:bg-gray-400"}`}
+          />
+        ))}
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => goTo(step - 1)}
+          disabled={isFirst}
+          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          ← Previous
+        </button>
+        <button
+          onClick={() => goTo(step + 1)}
+          disabled={isLast}
+          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
+        >
+          Next →
+        </button>
+      </div>
+
+      {isLast && (
+        <div className="mt-4 text-center py-3 bg-green-50 border border-green-200 rounded-xl text-sm font-semibold text-green-700">
+          ✓ Example complete!
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Pascal's Triangle Visual ---
+const pascalRows = [
+  [1],
+  [1, 1],
+  [1, 2, 1],
+  [1, 3, 3, 1],
+  [1, 4, 6, 4, 1],
+  [1, 5, 10, 10, 5, 1],
+  [1, 6, 15, 20, 15, 6, 1],
+  [1, 7, 21, 35, 35, 21, 7, 1],
+];
+
+function PascalTriangle() {
+  const [highlighted, setHighlighted] = useState(null);
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <p className="text-sm text-gray-500 mb-4 text-center">Click a row to highlight it</p>
+      <div className="flex flex-col items-center gap-2">
+        {pascalRows.map((row, n) => (
+          <div
+            key={n}
+            className={`flex gap-2 cursor-pointer transition-all`}
+            onClick={() => setHighlighted(highlighted === n ? null : n)}
+          >
+            <span className="text-xs text-gray-400 w-6 text-right self-center">n={n}</span>
+            {row.map((val, k) => (
+              <div
+                key={k}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-bold transition-all ${
+                  highlighted === n
+                    ? "bg-primary text-white scale-110"
+                    : "bg-gray-100 text-gray-700 hover:bg-blue-50"
+                }`}
+              >
+                {val}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+      {highlighted !== null && (
+        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800 text-center">
+          Row n={highlighted}: coefficients for <InlineMath math={`(a+b)^${highlighted}`} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Quick Check ---
+const quickChecks = [
+  {
+    problem: "\\text{What is the coefficient of } a^3b^2 \\text{ in } (a+b)^5?",
+    answer: "10",
+    hint: "Use Pascal's Triangle row n=5. The term a³b² has k=2, so the coefficient is C(5,2).",
+  },
+  {
+    problem: "\\text{Expand } (x+1)^3",
+    answer: "x^3+3x^2+3x+1",
+    hint: "Use row n=3 from Pascal's Triangle: coefficients are 1, 3, 3, 1.",
+  },
+];
+
+function QuickCheck() {
+  const [idx, setIdx] = useState(0);
+  const [input, setInput] = useState("");
+  const [feedback, setFeedback] = useState(null);
+  const [showHint, setShowHint] = useState(false);
+
+  const current = quickChecks[idx];
+
+  const normalize = (str) =>
+    str.trim().replace(/\s/g, "").replace(/\{/g, "").replace(/\}/g, "").replace(/\^/g, "").toLowerCase();
+
+  const check = () => {
+    if (normalize(input) === normalize(current.answer)) {
+      setFeedback({ type: "correct", message: "Correct! 🎉" });
+    } else {
+      setFeedback({ type: "wrong", message: "Not quite — try again or use the hint." });
+    }
+  };
+
+  const next = () => {
+    setIdx((i) => (i + 1) % quickChecks.length);
+    setInput("");
+    setFeedback(null);
+    setShowHint(false);
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-md p-6">
+      <div className="flex justify-between items-center mb-4">
+        <span className="text-sm font-semibold text-gray-500">Problem {idx + 1} of {quickChecks.length}</span>
+        <button onClick={next} className="text-sm text-primary font-semibold hover:underline">Next problem →</button>
+      </div>
+
+      <div className="text-lg text-center mb-6 bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <InlineMath math={current.problem} />
+      </div>
+
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && check()}
+        placeholder="Type your answer"
+        className="w-full p-3 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 mb-3"
+      />
+
+      <div className="flex gap-3 mb-3">
+        <button onClick={check} className="flex-1 py-2.5 bg-accent text-white font-semibold rounded-xl hover:opacity-90 transition-opacity text-sm">
+          Check Answer
+        </button>
+        <button
+          onClick={() => setShowHint(true)}
+          className="px-4 py-2.5 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors text-sm"
+        >
+          Hint
+        </button>
+      </div>
+
+      {showHint && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm text-amber-800 mb-3">
+          💡 {current.hint}
+        </div>
+      )}
+
+      {feedback && (
+        <div className={`text-center py-3 rounded-xl text-sm font-semibold ${
+          feedback.type === "correct"
+            ? "bg-green-50 text-green-700 border border-green-200"
+            : "bg-red-50 text-red-700 border border-red-200"
+        }`}>
+          {feedback.message}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ConceptCard({ title, desc, example, color }) {
+  return (
+    <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
+      <span className={`text-xs font-semibold px-3 py-1 rounded-full ${color} mb-3 inline-block`}>{title}</span>
+      <p className="text-gray-600 text-sm mb-3">{desc}</p>
+      <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-center text-sm">
+        <InlineMath math={example} />
+      </div>
+    </div>
+  );
+}
 
 export default function BinomialExpansionsLearnPage() {
+  const [activeExample, setActiveExample] = useState("multiplication");
+
   return (
     <>
       <SignedIn>
-        <div className="p-8 bg-background min-h-screen text-text font-body">
-          <h1 className="text-4xl font-extrabold text-primary mb-8 text-center">
-            Binomial Expansions - Learn
-          </h1>
+        <div className="bg-background min-h-screen font-body">
 
-          <section className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md space-y-8">
-            {/* Introduction */}
-            <div>
-              <h2 className="text-2xl font-semibold text-secondary mb-4">What Are Binomial Expansions?</h2>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                A binomial is an expression with two terms, like <InlineMath math="x + y" />, <InlineMath math="a + 3" />, or <InlineMath math="2m^2 - n^3" />. When we raise a binomial to a power, like <InlineMath math="(x + y)^3" />, we need to expand it into a sum of terms. The Binomial Theorem is a tool that makes this process easier, especially for higher powers, without having to multiply everything out by hand.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                In this lesson, we’ll learn how to expand binomials, use Pascal’s Triangle to find coefficients, and apply these expansions to solve real-world problems, like estimating numbers.
-              </p>
-            </div>
+          {/* Hero */}
+          <div className="bg-primary py-16 px-8 text-center">
+            <h1 className="text-5xl font-extrabold mb-4 text-white">Binomial Expansions</h1>
+            <p className="text-xl text-blue-100 max-w-xl mx-auto">
+              Expand powers of binomials efficiently using Pascal's Triangle and the Binomial Theorem.
+            </p>
+          </div>
 
-            {/* Expanding Binomials by Multiplication */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Expanding Binomials by Multiplication</h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Let’s start by expanding some binomials the old-fashioned way—by multiplying—to see the pattern.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                For <InlineMath math="(a + b)^2" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(a + b)^2 = (a + b)(a + b)" />
-                <BlockMath math="= a^2 + ab + ba + b^2" />
-                <BlockMath math="= a^2 + 2ab + b^2" />
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                For <InlineMath math="(a + b)^3" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(a + b)^3 = (a + b)(a + b)^2" />
-                <BlockMath math="= (a + b)(a^2 + 2ab + b^2)" />
-                <BlockMath math="= a(a^2 + 2ab + b^2) + b(a^2 + 2ab + b^2)" />
-                <BlockMath math="= a^3 + 2a^2b + ab^2 + a^2b + 2ab^2 + b^3" />
-                <BlockMath math="= a^3 + 3a^2b + 3ab^2 + b^3" />
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                For <InlineMath math="(a + b)^4" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(a + b)^4 = (a + b)(a + b)^3" />
-                <BlockMath math="= (a + b)(a^3 + 3a^2b + 3ab^2 + b^3)" />
-                <BlockMath math="= a(a^3 + 3a^2b + 3ab^2 + b^3) + b(a^3 + 3a^2b + 3ab^2 + b^3)" />
-                <BlockMath math="= a^4 + 3a^3b + 3a^2b^2 + ab^3 + a^3b + 3a^2b^2 + 3ab^3 + b^4" />
-                <BlockMath math="= a^4 + 4a^3b + 6a^2b^2 + 4ab^3 + b^4" />
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Notice the coefficients: for <InlineMath math="(a + b)^2" />, they’re <InlineMath math="1, 2, 1" />; for <InlineMath math="(a + b)^3" />, they’re <InlineMath math="1, 3, 3, 1" />; and for <InlineMath math="(a + b)^4" />, they’re <InlineMath math="1, 4, 6, 4, 1" />. These numbers follow a pattern we’ll explore with Pascal’s Triangle.
-              </p>
-            </div>
+          <div className="max-w-4xl mx-auto px-8 py-12 space-y-16">
 
-            {/* The Binomial Theorem */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">The Binomial Theorem Formula</h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                The Binomial Theorem gives us a faster way to expand <InlineMath math="(a + b)^n" />. The formula is:
+            {/* What is a Binomial */}
+            <section>
+              <h2 className="text-3xl font-extrabold text-primary mb-6">What is a Binomial?</h2>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6">
+                A <strong>binomial</strong> is an expression with exactly two terms. When raised to a power, we need to expand it into a sum of terms. The Binomial Theorem gives us a systematic way to do this.
               </p>
-              <div className="my-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                {[
+                  { label: "Simple", example: "x + y" },
+                  { label: "With constants", example: "a + 3" },
+                  { label: "With coefficients", example: "2m^2 - n^3" },
+                ].map(({ label, example }) => (
+                  <div key={label} className="bg-blue-50 border border-blue-100 rounded-xl p-5">
+                    <p className="text-sm font-semibold text-blue-600 mb-2">{label}</p>
+                    <div className="text-center text-lg"><InlineMath math={example} /></div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-center">
+                <p className="text-sm text-gray-500 mb-2">The Binomial Theorem</p>
                 <BlockMath math="(a + b)^n = \sum_{k=0}^{n} \binom{n}{k} a^{n-k} b^k" />
+                <p className="text-sm text-gray-500 mt-2">where <InlineMath math="\binom{n}{k} = \frac{n!}{k!(n-k)!}" /></p>
               </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Let’s break it down:
-              </p>
-              <ul className="list-disc list-inside text-lg text-gray-700 leading-relaxed mt-2">
-                <li><InlineMath math="a" /> and <InlineMath math="b" /> are the two terms in your binomial (e.g., <InlineMath math="x" /> and <InlineMath math="2" /> in <InlineMath math="(x + 2)" />).</li>
-                <li><InlineMath math="n" /> is the power you’re raising the binomial to.</li>
-                <li><InlineMath math="\binom{n}{k}" /> is the binomial coefficient—it’s the number in front of each term.</li>
-                <li>The <InlineMath math="\sum" /> means we add up terms, from <InlineMath math="k=0" /> to <InlineMath math="k=n" />.</li>
-              </ul>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                The binomial coefficient <InlineMath math="\binom{n}{k}" /> is calculated as:
-              </p>
-              <div className="my-4">
-                <BlockMath math="\binom{n}{k} = \frac{n!}{k!(n-k)!}" />
+            </section>
+
+            {/* Key Concepts */}
+            <section>
+              <h2 className="text-3xl font-extrabold text-primary mb-6">Key Concepts</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <ConceptCard
+                  title="Binomial Coefficient"
+                  desc="The number in front of each term. Calculated using factorials."
+                  example="\binom{5}{2} = \frac{5!}{2!3!} = 10"
+                  color="bg-blue-100 text-blue-700"
+                />
+                <ConceptCard
+                  title="Exponent Pattern"
+                  desc="Powers of a decrease, powers of b increase. They always sum to n."
+                  example="(a+b)^4: a^4, a^3b, a^2b^2, ab^3, b^4"
+                  color="bg-teal-100 text-teal-700"
+                />
+                <ConceptCard
+                  title="Sign Pattern"
+                  desc="For (a−b)ⁿ, signs alternate: +, −, +, −, ..."
+                  example="(x-y)^3 = x^3 - 3x^2y + 3xy^2 - y^3"
+                  color="bg-purple-100 text-purple-700"
+                />
+                <ConceptCard
+                  title="Numerical Estimation"
+                  desc="Write a number as (1 + small value)ⁿ and use the first few terms."
+                  example="(1.02)^6 = (1+0.02)^6 \approx 1.126"
+                  color="bg-amber-100 text-amber-700"
+                />
               </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Here, <InlineMath math="n!" /> (n factorial) means multiplying all numbers from 1 to <InlineMath math="n" /> (e.g., <InlineMath math="3! = 3 \times 2 \times 1 = 6" />).
+            </section>
+
+            {/* Pascal's Triangle */}
+            <section>
+              <h2 className="text-3xl font-extrabold text-primary mb-2">Pascal's Triangle</h2>
+              <p className="text-gray-500 mb-6">
+                Each number is the sum of the two numbers above it. Each row gives the coefficients for the corresponding binomial expansion.
               </p>
+              <PascalTriangle />
+            </section>
+
+            {/* Worked Examples */}
+            <section>
+              <h2 className="text-3xl font-extrabold text-primary mb-2">Worked Examples</h2>
+              <p className="text-gray-500 mb-6">Step through each technique at your own pace.</p>
+
+              <div className="flex flex-wrap gap-3 mb-6">
+                {Object.entries(workedExamples).map(([key, ex]) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveExample(key)}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                      activeExample === key ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {ex.title}
+                  </button>
+                ))}
+              </div>
+
+              <WorkedExample key={activeExample} example={workedExamples[activeExample]} />
+            </section>
+
+            {/* Quick Check */}
+            <section>
+              <h2 className="text-3xl font-extrabold text-primary mb-2">Quick Check</h2>
+              <p className="text-gray-500 mb-6">Test your understanding before heading to practice.</p>
+              <QuickCheck />
+            </section>
+
+            {/* CTA */}
+            <div className="flex justify-center pb-8">
+              <a href="/lessons/binomial/practice">
+                <button className="px-8 py-3 bg-accent text-white font-semibold rounded-xl shadow hover:opacity-90 transition-opacity">
+                  Practice Binomial Expansions
+                </button>
+              </a>
             </div>
 
-            {/* Pascal’s Triangle */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Using Pascal’s Triangle for Coefficients</h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                The coefficients in a binomial expansion come from Pascal’s Triangle, a triangular arrangement of numbers where each number is the sum of the two numbers above it. Here are the rows for <InlineMath math="n=0" /> to <InlineMath math="n=10" />:
-              </p>
-              <div className="my-6">
-                <table className="table-auto mx-auto border-collapse border border-gray-300">
-                  <thead>
-                    <tr>
-                      <th className="border border-gray-300 px-4 py-2 text-left">n</th>
-                      <th className="border border-gray-300 px-4 py-2 text-center">Coefficients</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">0</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">1</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">2</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 2 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">3</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 3 3 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">4</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 4 6 4 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">5</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 5 10 10 5 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">6</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 6 15 20 15 6 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">7</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 7 21 35 35 21 7 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">8</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 8 28 56 70 56 28 8 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">9</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 9 36 84 126 126 84 36 9 1</td>
-                    </tr>
-                    <tr>
-                      <td className="border border-gray-300 px-4 py-2">10</td>
-                      <td className="border border-gray-300 px-4 py-2 text-center">1 10 45 120 210 252 210 120 45 10 1</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Each row gives the coefficients for <InlineMath math="(a + b)^n" />. For example:
-              </p>
-              <ul className="list-disc list-inside text-lg text-gray-700 leading-relaxed mt-2">
-                <li>Row <InlineMath math="n=2" />: <InlineMath math="1, 2, 1" />, so <InlineMath math="(a + b)^2 = a^2 + 2ab + b^2" />.</li>
-                <li>Row <InlineMath math="n=3" />: <InlineMath math="1, 3, 3, 1" />, so <InlineMath math="(a + b)^3 = a^3 + 3a^2b + 3ab^2 + b^3" />.</li>
-              </ul>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Notice that in each term, the exponents of <InlineMath math="a" /> and <InlineMath math="b" /> add up to <InlineMath math="n" />. For <InlineMath math="(a + b)^4" />, the terms are <InlineMath math="a^4b^0, a^3b^1, a^2b^2, a^1b^3, a^0b^4" />—the exponents always sum to 4.
-              </p>
-            </div>
-
-            {/* Example 1: (p + q)^5 */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Example 1: Expanding <InlineMath math="(p + q)^5" /></h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Let’s expand <InlineMath math="(p + q)^5" /> using Pascal’s Triangle. The terms without coefficients are <InlineMath math="p^5, p^4q, p^3q^2, p^2q^3, pq^4, q^5" />.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                From Pascal’s Triangle, the coefficients for <InlineMath math="n=5" /> are <InlineMath math="1, 5, 10, 10, 5, 1" />. So:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(p + q)^5 = p^5 + 5p^4q + 10p^3q^2 + 10p^2q^3 + 5pq^4 + q^5" />
-              </div>
-            </div>
-
-            {/* Example 2: (c + 4)^5 */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Example 2: Expanding <InlineMath math="(c + 4)^5" /></h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Now let’s expand <InlineMath math="(c + 4)^5" />. Here, <InlineMath math="a = c" /> and <InlineMath math="b = 4" />. The terms without coefficients are <InlineMath math="c^5, c^4(4), c^3(4)^2, c^2(4)^3, c(4)^4, (4)^5" />.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Using the coefficients for <InlineMath math="n=5" /> (<InlineMath math="1, 5, 10, 10, 5, 1" />):
-              </p>
-              <div className="my-4">
-                <BlockMath math="(c + 4)^5 = c^5 + 5c^4 \cdot 4 + 10c^3 \cdot 4^2 + 10c^2 \cdot 4^3 + 5c \cdot 4^4 + 4^5" />
-                <BlockMath math="= c^5 + 20c^4 + 160c^3 + 640c^2 + 1280c + 1024" />
-              </div>
-            </div>
-
-            {/* Example 3: (2x + 3y)^4 */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Example 3: Expanding <InlineMath math="(2x + 3y)^4" /></h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Let’s try <InlineMath math="(2x + 3y)^4" />. The terms without coefficients are <InlineMath math="(2x)^4, (2x)^3(3y), (2x)^2(3y)^2, (2x)(3y)^3, (3y)^4" />.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Coefficients for <InlineMath math="n=4" /> are <InlineMath math="1, 4, 6, 4, 1" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(2x + 3y)^4 = (2x)^4 + 4(2x)^3(3y) + 6(2x)^2(3y)^2 + 4(2x)(3y)^3 + (3y)^4" />
-                <BlockMath math="= 16x^4 + 4 \cdot 8x^3 \cdot 3y + 6 \cdot 4x^2 \cdot 9y^2 + 4 \cdot 2x \cdot 27y^3 + 81y^4" />
-                <BlockMath math="= 16x^4 + 96x^3y + 216x^2y^2 + 216xy^3 + 81y^4" />
-              </div>
-            </div>
-
-            {/* Example 4: (x - y)^7 */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Example 4: Expanding <InlineMath math="(x - y)^7" /></h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                For <InlineMath math="(x - y)^7" />, we write it as <InlineMath math="(x + (-y))^7" />. The terms without coefficients are <InlineMath math="x^7, x^6(-y), x^5(-y)^2, x^4(-y)^3, x^3(-y)^4, x^2(-y)^5, x(-y)^6, (-y)^7" />.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Coefficients for <InlineMath math="n=7" /> are <InlineMath math="1, 7, 21, 35, 35, 21, 7, 1" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(x - y)^7 = x^7 + 7x^6(-y) + 21x^5(-y)^2 + 35x^4(-y)^3 + 35x^3(-y)^4 + 21x^2(-y)^5 + 7x(-y)^6 + (-y)^7" />
-                <BlockMath math="= x^7 - 7x^6y + 21x^5y^2 - 35x^4y^3 + 35x^3y^4 - 21x^2y^5 + 7xy^6 - y^7" />
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Notice how the signs alternate because of the negative sign in <InlineMath math="-y" />.
-              </p>
-            </div>
-
-            {/* Numerical Applications */}
-            <div>
-              <h3 className="text-xl font-semibold text-secondary mb-3">Numerical Applications: Estimating <InlineMath math="(1.02)^6" /></h3>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Binomial expansions can help us estimate numbers. Let’s evaluate <InlineMath math="(1.02)^6" /> to 4 significant figures.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Write <InlineMath math="1.02 = 1 + 0.02" />, so <InlineMath math="(1.02)^6 = (1 + 0.02)^6" />. The terms without coefficients are <InlineMath math="1^6, 1^5(0.02), 1^4(0.02)^2, \ldots, (0.02)^6" />.
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mt-2">
-                Coefficients for <InlineMath math="n=6" /> are <InlineMath math="1, 6, 15, 20, 15, 6, 1" />:
-              </p>
-              <div className="my-4">
-                <BlockMath math="(1.02)^6 = 1 + 6(0.02) + 15(0.02)^2 + 20(0.02)^3 + 15(0.02)^4 + 6(0.02)^5 + (0.02)^6" />
-                <BlockMath math="= 1 + 0.12 + 0.006 + 0.00016 + 0.0000024 + 0.0000000192 + 0.000000000064" />
-                <BlockMath math="= 1.1261624192" />
-                <BlockMath math="= 1.126 \text{ (to 4 significant figures)}" />
-              </div>
-              <p className="text-lg text-gray-700 leading-relaxed">
-                Note: We can stop after the first few terms (e.g., up to <InlineMath math="(0.02)^3" />) because later terms are very small and don’t affect the answer much.
-              </p>
-            </div>
-          </section>
+          </div>
         </div>
       </SignedIn>
       <SignedOut>
