@@ -21,7 +21,7 @@
     "clsx": "^2.1.1",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
-    "katex": "^0.16.21",
+    "katex": "^0.16.45",
     "lucide-react": "^0.475.0",
     "mathlive": "^0.109.1",
     "mongoose": "^8.9.5",
