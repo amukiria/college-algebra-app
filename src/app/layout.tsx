@@ -1,7 +1,7 @@
 import React from "react";
 import { ClerkProvider } from "@clerk/nextjs";
-import TopBar from "../components/TopBar"; // Adjust the path as needed
-import "@/styles/globals.css";// Ensure this path is correct
+import TopBar from "../components/TopBar";
+import "../styles/globals.css";
 import { Analytics } from "@vercel/analytics/react"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -14,10 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </head>
         <body className="full-height bg-background text-text">
           <TopBar />
-          {/* Add top padding equal to the height of your fixed header */}
           <div className="pt-20 container">
             <main>{children}
-            <Analytics />
+              <Analytics />
             </main>
           </div>
         </body>
