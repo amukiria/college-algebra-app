@@ -23,7 +23,7 @@
     "jspdf": "^4.2.1",
     "katex": "^0.17.0",
     "lucide-react": "^1.17.0",
-    "mathlive": "^0.109.2",
+    "mathlive": "^0.110.0",
     "mongoose": "^9.6.3",
     "next": "^16.2.7",
     "playfab-sdk": "^2.168.250214",
