@@ -24,7 +24,7 @@
     "katex": "^0.18.4",
     "lucide-react": "^1.33.0",
     "mathlive": "^0.110.0",
-    "mongoose": "^9.9.2",
+    "mongoose": "^9.9.3",
     "next": "^16.3.1",
     "playfab-sdk": "^2.168.250214",
     "plotly.js": "^3.7.0",
