@@ -27,7 +27,7 @@
     "mongoose": "^9.9.5",
     "next": "^16.3.5",
     "playfab-sdk": "^2.168.250214",
-    "plotly.js": "^4.0.0",
+    "plotly.js": "^4.1.1",
     "prop-types": "^15.8.1",
     "react": "^19.2.8",
     "react-chartjs-2": "^5.3.0",
